@@ -1,7 +1,7 @@
 "use client";
-import React from 'react';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
+import React from "react";
+import Image from "next/image";
+import { motion } from "framer-motion";
 
 const BannerDetSec = () => {
   return (
@@ -27,17 +27,18 @@ const BannerDetSec = () => {
           className="max-w-3xl mx-auto flex flex-col items-center"
         >
           <span className="text-sm md:text-base font-bold uppercase tracking-[0.3em] mb-6 text-yellow-400">
-            Culinary Essentials
+            Premium Handpicked Nuts
           </span>
 
           <h2 className="text-5xl md:text-8xl font-black mb-8 tracking-tighter leading-[0.9] uppercase">
-            Spices that <br className="hidden md:block" /> Inspire
+            Kashmiri Almonds
           </h2>
 
           <p className="text-lg md:text-2xl max-w-xl mb-12 leading-relaxed font-medium opacity-90">
-            From the finest farms to your kitchen, our spices bring authentic
-            flavors, rich aromas, and the essence of tradition to every recipe
-            you create.
+            Experience the crunch of nature’s finest selection. Our premium
+            Kashmiri almonds are rich in nutrients, packed with flavor, and
+            harvested with care to ensure the highest quality for your healthy
+            lifestyle.
           </p>
 
           <motion.button
