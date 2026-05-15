@@ -16,7 +16,7 @@ const Header = () => {
           <FaLinkedinIn size={14} className="cursor-pointer hover:opacity-70" /> 
           <FaYoutube size={14} className="cursor-pointer hover:opacity-70" />
         </div>
-        <p>Free shipping for orders over ₹30</p>
+        <p>Free shipping for orders over ₹2000</p>
         <div className="hidden md:block w-20"></div> 
       </div>
 
