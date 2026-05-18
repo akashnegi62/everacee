@@ -50,7 +50,7 @@ const ShopPage = () => {
       </section>
 
       {/* Products Component */}
-      <AllProduct />
+      <AllProduct showFilter={true} />
     </main>
   );
 };

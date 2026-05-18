@@ -9,6 +9,7 @@ import {
   Phone,
   Menu,
   X,
+  Heart,
 } from "lucide-react";
 import {
   FaFacebookF,
@@ -21,6 +22,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import Link from "next/link";
 interface NavItem {
   name: string;
@@ -38,6 +40,11 @@ const navItems: NavItem[] = [
     hasDropdown: false,
   },
   {
+    name: "About us",
+    href: "/about",
+    hasDropdown: false,
+  },
+  {
     name: "Bestseller",
     href: "/bestseller",
     hasDropdown: false,
@@ -47,6 +54,7 @@ const navItems: NavItem[] = [
     href: "/shop",
     hasDropdown: false,
   },
+
   {
     name: "Contact us",
     href: "/contact",
@@ -62,6 +70,7 @@ const Header = () => {
   );
   const { user, logout, isAuthenticated } = useAuth();
   const { cartTotal, itemCount } = useCart();
+  const { wishlistCount } = useWishlist();
   const pathname = usePathname();
 
   const isActive = (item: NavItem) => {
@@ -251,6 +260,19 @@ const Header = () => {
                 </span>
               </Link>
             )}
+
+            <Link
+              href="/wishlist"
+              className="flex items-center justify-center border-2 border-gray-100 w-9 h-9 sm:w-auto sm:h-auto sm:px-3 sm:py-2 rounded-full text-xs font-bold hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition cursor-pointer relative"
+              title="Wishlist"
+            >
+              <Heart size={16} className="shrink-0 text-red-500 fill-red-500" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
 
             <Link
               href="/cart"
