@@ -16,6 +16,9 @@ import {
   Clock,
   Save,
   ShieldCheck,
+  Plus,
+  Trash2,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-hot-toast";
@@ -64,6 +67,59 @@ export default function ProfilePage() {
     phone: "+91 98765 43210",
     address: "128 Alpine Ridge Boulevard, Pampore Sector 4, Kashmir 190001",
   });
+
+  interface Address {
+    id: string;
+    label: string;
+    name: string;
+    address: string;
+    phone: string;
+    isDefault: boolean;
+  }
+
+  const [addresses, setAddresses] = useState<Address[]>([
+    {
+      id: "addr-1",
+      label: "Default Billing & Shipping",
+      name: "Akash Negi",
+      address: "128 Alpine Ridge Boulevard, Pampore Sector 4, Kashmir 190001",
+      phone: "+91 98765 43210",
+      isDefault: true,
+    },
+  ]);
+
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [newAddress, setNewAddress] = useState({
+    label: "Home",
+    name: "",
+    address: "",
+    phone: "",
+  });
+
+  const handleAddAddress = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAddress.name || !newAddress.address || !newAddress.phone) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+    const created: Address = {
+      id: `addr-${Date.now()}`,
+      label: newAddress.label || "Home",
+      name: newAddress.name,
+      address: newAddress.address,
+      phone: newAddress.phone,
+      isDefault: addresses.length === 0,
+    };
+    setAddresses([...addresses, created]);
+    setIsAddingAddress(false);
+    setNewAddress({ label: "Home", name: "", address: "", phone: "" });
+    toast.success("New address added successfully!");
+  };
+
+  const handleDeleteAddress = (id: string) => {
+    setAddresses(addresses.filter((a) => a.id !== id));
+    toast.success("Address removed");
+  };
 
   useEffect(() => {
     if (user) {
@@ -315,7 +371,7 @@ export default function ProfilePage() {
                       <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto pt-4 sm:pt-0 border-t sm:border-none border-gray-200">
                         <span className="text-xl font-black text-gray-900">{order.total}</span>
                         <Link
-                          href="#"
+                          href={`/order/${order.id}`}
                           className="text-xs font-black uppercase text-yellow-600 hover:text-black transition-colors pt-1 tracking-wider"
                         >
                           View Details ➔
@@ -338,27 +394,124 @@ export default function ProfilePage() {
                   <MapPin size={20} className="text-[#facc15]" /> Saved Shipping Addresses
                 </h2>
 
-                <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-4">
-                  <div className="flex items-center justify-between border-b border-gray-200 pb-3">
-                    <span className="bg-black text-[#facc15] font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
-                      Default Billing & Shipping
-                    </span>
-                    <button className="text-xs font-black uppercase text-yellow-600 hover:text-black transition-colors cursor-pointer">
-                      Edit Address
-                    </button>
-                  </div>
-                  <div className="space-y-1 text-sm font-semibold text-gray-700">
-                    <p className="font-black text-gray-900">
-                      {formData.firstName} {formData.lastName}
-                    </p>
-                    <p>{formData.address}</p>
-                    <p className="text-xs text-gray-400 pt-2">Phone: {formData.phone}</p>
-                  </div>
+                <div className="space-y-4">
+                  {addresses.map((addr) => (
+                    <div key={addr.id} className="p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-4 hover:border-yellow-200 transition-all shadow-2xs">
+                      <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+                        <span className="bg-black text-[#facc15] font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+                          {addr.label}
+                        </span>
+                        <button
+                          onClick={() => handleDeleteAddress(addr.id)}
+                          className="text-xs font-black uppercase text-red-500 hover:text-red-700 transition-colors cursor-pointer flex items-center gap-1"
+                          title="Remove Address"
+                        >
+                          <Trash2 size={14} /> Remove
+                        </button>
+                      </div>
+                      <div className="space-y-1 text-sm font-semibold text-gray-700">
+                        <p className="font-black text-gray-900">{addr.name}</p>
+                        <p>{addr.address}</p>
+                        <p className="text-xs text-gray-400 pt-2">Phone: {addr.phone}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                <button className="w-full py-4 border-2 border-dashed border-gray-200 rounded-3xl text-xs font-black uppercase text-gray-500 hover:border-[#facc15] hover:text-black transition-colors cursor-pointer flex items-center justify-center gap-2">
-                  + Add New Address
-                </button>
+                {isAddingAddress ? (
+                  <form onSubmit={handleAddAddress} className="bg-yellow-50/50 p-6 sm:p-8 rounded-3xl border border-yellow-100 space-y-6 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-yellow-200 pb-3">
+                      <h3 className="font-black text-gray-900 uppercase text-sm tracking-tight">Add New Address</h3>
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingAddress(false)}
+                        className="text-gray-400 hover:text-gray-900 p-1.5 rounded-full transition-colors cursor-pointer bg-white shadow-2xs"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-black uppercase text-gray-700 mb-1.5 tracking-wider">
+                          Label (Home, Office, etc.)
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newAddress.label}
+                          onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
+                          placeholder="e.g. Home, Office"
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:border-yellow-500 font-medium transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-black uppercase text-gray-700 mb-1.5 tracking-wider">
+                          Recipient Name
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newAddress.name}
+                          onChange={(e) => setNewAddress({ ...newAddress, name: e.target.value })}
+                          placeholder="Full Name"
+                          className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:border-yellow-500 font-medium transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-black uppercase text-gray-700 mb-1.5 tracking-wider">
+                        Full Street Address
+                      </label>
+                      <textarea
+                        required
+                        rows={3}
+                        value={newAddress.address}
+                        onChange={(e) => setNewAddress({ ...newAddress, address: e.target.value })}
+                        placeholder="Street address, Apartment/Suite, City, State, PIN Code"
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:border-yellow-500 font-medium resize-none transition-all"
+                      ></textarea>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-black uppercase text-gray-700 mb-1.5 tracking-wider">
+                        Phone Number
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newAddress.phone}
+                        onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
+                        placeholder="+91 98765 43210"
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:border-yellow-500 font-medium transition-all"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingAddress(false)}
+                        className="px-6 py-3 border border-gray-200 rounded-full font-black text-xs uppercase tracking-wider text-gray-600 hover:bg-white transition-colors cursor-pointer shadow-xs"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-8 py-3 bg-[#facc15] hover:bg-black text-black hover:text-[#facc15] rounded-full font-black text-xs uppercase tracking-widest shadow-md hover:shadow-xl transition-all cursor-pointer"
+                      >
+                        Save Address
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <button
+                    onClick={() => setIsAddingAddress(true)}
+                    className="w-full py-4 border-2 border-dashed border-gray-200 rounded-3xl text-xs font-black uppercase text-gray-500 hover:border-[#facc15] hover:text-black transition-colors cursor-pointer flex items-center justify-center gap-2 group shadow-xs hover:shadow-md"
+                  >
+                    <Plus size={16} className="group-hover:rotate-90 transition-transform" /> Add New Address
+                  </button>
+                )}
               </motion.div>
             )}
 
