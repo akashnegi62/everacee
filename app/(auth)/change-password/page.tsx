@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { authApi } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { FaLock, FaArrowRight } from 'react-icons/fa';
@@ -40,6 +42,16 @@ const ChangePasswordPage = () => {
         className="w-full max-w-md bg-[#242424] rounded-[40px] p-10 shadow-2xl border border-white/5 relative z-10"
       >
         <div className="text-center mb-10">
+          <Link href="/" className="inline-block mb-6 cursor-pointer">
+            <Image
+              src="/Img/logo.webp"
+              alt="Everace Logo"
+              width={150}
+              height={38}
+              className="brightness-0 invert hover:opacity-90 transition-opacity"
+              priority
+            />
+          </Link>
           <h2 className="text-3xl font-black text-white tracking-tight mb-2">Security</h2>
           <p className="text-gray-400 font-medium">Update your account password</p>
         </div>

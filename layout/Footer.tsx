@@ -1,5 +1,7 @@
 "use client";
 import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 import {
   FaFacebookF,
   FaInstagram,
@@ -32,7 +34,7 @@ const Footer = () => {
               placeholder="Enter Your Email"
               className="bg-transparent text-gray-900 w-full outline-none text-sm font-bold"
             />
-            <button className="bg-[#facc15] text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white transition-colors flex items-center gap-2">
+            <button className="bg-[#facc15] text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:bg-white transition-colors flex items-center gap-2 cursor-pointer">
               Submit <FaPaperPlane size={14} />
             </button>
           </div>
@@ -42,9 +44,15 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
           {/* Brand & Contact */}
           <div className="flex flex-col gap-6">
-            <div className="text-2xl font-black tracking-tighter">
-              EVER<span className="text-[#facc15]">A</span>CE
-            </div>
+            <Link href="/" className="inline-block w-fit cursor-pointer">
+              <Image
+                src="/Img/logo.webp"
+                alt="Everace Logo"
+                width={150}
+                height={38}
+                className="brightness-0 invert hover:opacity-90 transition-opacity"
+              />
+            </Link>
             <div className="flex flex-col gap-4 text-gray-400 font-medium text-sm"></div>
           </div>
 
