@@ -30,7 +30,7 @@ const MarqueSec = () => {
     <section className="relative py-24 bg-white overflow-hidden">
       <div className="relative max-w-6xl mx-auto px-6 z-10">
         {/* 2. Premium 2-Card Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-20 items-stretch">
           {cardData.map((item, index) => (
             <motion.div
               key={item.id}
@@ -38,10 +38,10 @@ const MarqueSec = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
-              className="flex flex-col md:flex-row items-center gap-8 bg-white p-8 rounded-[30px] shadow-2xl hover:shadow-cyan-100 transition-all border border-gray-100/50"
+              className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 bg-white p-6 sm:p-8 rounded-[30px] shadow-2xl hover:shadow-cyan-100 transition-all border border-gray-100/50"
             >
-              {/* Product Visual (Using BG-removed PNG) */}
-              <div className="relative w-44 h-44 shrink-0 group">
+              {/* Product Visual */}
+              <div className="relative w-36 h-36 sm:w-44 sm:h-44 shrink-0 group">
                 <Image
                   src={item.image}
                   alt={item.title}
@@ -52,14 +52,14 @@ const MarqueSec = () => {
               </div>
 
               {/* Text Content */}
-              <div className="grow text-center md:text-left">
-                <h3 className="text-2xl font-black text-gray-950 mb-3 leading-tight tracking-tight">
+              <div className="grow text-center sm:text-left">
+                <h3 className="text-xl sm:text-2xl font-black text-gray-950 mb-2 sm:mb-3 leading-tight tracking-tight">
                   {item.title}
                 </h3>
-                <p className="text-gray-600 text-sm leading-relaxed mb-5 font-medium">
+                <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5 font-medium">
                   {item.content}
                 </p>
-                <button className="text-sm font-black text-[#0ea5e9] uppercase tracking-wider hover:text-black transition-colors">
+                <button className="text-xs sm:text-sm font-black text-[#0ea5e9] uppercase tracking-wider hover:text-black transition-colors cursor-pointer">
                   Explore Now →
                 </button>
               </div>

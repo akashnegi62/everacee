@@ -3,12 +3,19 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, ShoppingBag, ArrowLeft, Heart, ShoppingCart } from "lucide-react";
+import {
+  Trash2,
+  ShoppingBag,
+  ArrowLeft,
+  Heart,
+  ShoppingCart,
+} from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
 
 export default function WishlistPage() {
-  const { wishlist, removeFromWishlist, clearWishlist, wishlistCount } = useWishlist();
+  const { wishlist, removeFromWishlist, clearWishlist, wishlistCount } =
+    useWishlist();
   const { addToCart } = useCart();
 
   return (
@@ -18,10 +25,13 @@ export default function WishlistPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-6">
           <div>
             <h1 className="text-4xl sm:text-5xl font-black text-gray-900 tracking-tight uppercase flex items-center gap-3">
-              <Heart className="text-red-500 fill-red-500" size={36} /> My Wishlist
+              <Heart className="text-red-500 fill-red-500" size={36} /> My
+              Wishlist
             </h1>
             <p className="text-gray-500 font-medium mt-1">
-              {wishlistCount === 0 ? "No items in your wishlist" : `You have ${wishlistCount} premium items saved`}
+              {wishlistCount === 0
+                ? "No items in your wishlist"
+                : `You have ${wishlistCount} premium items saved`}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -54,9 +64,12 @@ export default function WishlistPage() {
               <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
                 <Heart size={48} className="fill-red-500/20" />
               </div>
-              <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight uppercase">Your Wishlist is Empty</h2>
+              <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight uppercase">
+                Your Wishlist is Empty
+              </h2>
               <p className="text-gray-500 max-w-md mx-auto font-medium mb-8">
-                Explore our shop and tap the heart icon on your favorite items to save them for later!
+                Explore our shop and tap the heart icon on your favorite items
+                to save them for later!
               </p>
               <Link
                 href="/shop"
@@ -66,7 +79,10 @@ export default function WishlistPage() {
               </Link>
             </motion.div>
           ) : (
-            <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <motion.div
+              layout
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+            >
               <AnimatePresence>
                 {wishlist.map((item) => (
                   <motion.div
@@ -99,7 +115,9 @@ export default function WishlistPage() {
 
                     {/* Price */}
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <span className="text-xl font-black text-gray-900">${item.price.toFixed(2)}</span>
+                      <span className="text-xl font-black text-gray-900">
+                        ${item.price.toFixed(2)}
+                      </span>
                     </div>
 
                     {/* Title */}

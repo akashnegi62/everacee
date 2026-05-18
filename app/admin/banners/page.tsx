@@ -6,7 +6,7 @@ import Image from "next/image";
 const initialBanners = [
   { id: 1, title: "Summer Harvest Mega Sale", subtitle: "Flat 20% Off on all Kashmiri Dry Fruits", link: "/products?category=dry-fruits", placement: "Hero Carousel", image: "/Img/walnuts.jpg", active: true },
   { id: 2, title: "Pure Organic Honey Showcase", subtitle: "Sourced directly from Himalayan valleys", link: "/products?category=honey", placement: "Mid-section Promo", image: "/Img/honey.jpeg", active: true },
-  { id: 3, title: "Premium Saffron Gift Boxes", subtitle: "Exclusive packaging for festive greetings", link: "/products?category=spices", placement: "Hero Carousel", image: "/Img/product1.png", active: false },
+  { id: 3, title: "Premium Saffron Gift Boxes", subtitle: "Exclusive packaging for festive greetings", link: "/products?category=spices", placement: "Hero Carousel", image: "/Img/almonds.jpg", active: false },
   { id: 4, title: "Fresh Berry Delight", subtitle: "Try our crunchy sun-dried blueberries", link: "/products?category=berries", placement: "Category Header", image: "/Img/blueberry.jpg", active: true },
 ];
 
