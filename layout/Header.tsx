@@ -1,7 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
-import { User, ShoppingBasket, ChevronDown, Phone, Menu, X } from "lucide-react";
+import {
+  User,
+  ShoppingBasket,
+  ChevronDown,
+  Phone,
+  Menu,
+  X,
+} from "lucide-react";
 import {
   FaFacebookF,
   FaInstagram,
@@ -53,15 +60,33 @@ const navItems = [
     megaMenu: [
       {
         title: "DRY FRUITS",
-        items: ["Kashmiri Walnuts", "Premium Almonds", "Pistachios", "Cashew Nuts", "Dried Figs"],
+        items: [
+          "Kashmiri Walnuts",
+          "Premium Almonds",
+          "Pistachios",
+          "Cashew Nuts",
+          "Dried Figs",
+        ],
       },
       {
         title: "HONEY & SAFFRON",
-        items: ["Acacia Honey", "Sidr Honey", "Organic Saffron", "Saffron Elixir", "Honey Comb"],
+        items: [
+          "Acacia Honey",
+          "Sidr Honey",
+          "Organic Saffron",
+          "Saffron Elixir",
+          "Honey Comb",
+        ],
       },
       {
         title: "SPICES & BERRIES",
-        items: ["Cardamom Pods", "Cinnamon Quills", "Dried Cranberries", "Dried Blueberries", "Black Pepper"],
+        items: [
+          "Cardamom Pods",
+          "Cinnamon Quills",
+          "Dried Cranberries",
+          "Dried Blueberries",
+          "Black Pepper",
+        ],
       },
     ],
   },
@@ -93,7 +118,9 @@ const navItems = [
 const Header = () => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
+  const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(
+    null,
+  );
   const { user, logout, isAuthenticated } = useAuth();
   const { cartTotal, itemCount } = useCart();
 
@@ -103,12 +130,26 @@ const Header = () => {
         {/* Top Announcement Bar */}
         <div className="bg-[#facc15] py-2 px-4 sm:px-6 flex justify-between items-center text-[10px] sm:text-xs font-bold uppercase tracking-widest text-black">
           <div className="flex gap-3 sm:gap-4">
-            <FaFacebookF size={14} className="cursor-pointer hover:opacity-70 transition-opacity" />
-            <FaInstagram size={14} className="cursor-pointer hover:opacity-70 transition-opacity" />
-            <FaLinkedinIn size={14} className="cursor-pointer hover:opacity-70 transition-opacity" />
-            <FaYoutube size={14} className="cursor-pointer hover:opacity-70 transition-opacity" />
+            <FaFacebookF
+              size={14}
+              className="cursor-pointer hover:opacity-70 transition-opacity"
+            />
+            <FaInstagram
+              size={14}
+              className="cursor-pointer hover:opacity-70 transition-opacity"
+            />
+            <FaLinkedinIn
+              size={14}
+              className="cursor-pointer hover:opacity-70 transition-opacity"
+            />
+            <FaYoutube
+              size={14}
+              className="cursor-pointer hover:opacity-70 transition-opacity"
+            />
           </div>
-          <p className="truncate text-center">Free shipping for orders over ₹2000</p>
+          <p className="truncate text-center">
+            Free shipping for orders over ₹2000
+          </p>
           <div className="hidden md:block w-20"></div>
         </div>
 
@@ -147,11 +188,15 @@ const Header = () => {
                 <a
                   href={item.href}
                   className={`flex items-center gap-1 transition-colors duration-300 ${
-                    hoveredItem === item.name ? "text-yellow-600" : "text-gray-800"
+                    hoveredItem === item.name
+                      ? "text-yellow-600"
+                      : "text-gray-800"
                   } ${item.name === "Shop" ? "text-yellow-600" : ""}`}
                 >
                   {item.name}
-                  {item.name === "Shop" && <FaStar size={12} className="text-[#facc15]" />}
+                  {item.name === "Shop" && (
+                    <FaStar size={12} className="text-[#facc15]" />
+                  )}
                   {item.hasDropdown && (
                     <ChevronDown
                       size={14}
@@ -190,7 +235,10 @@ const Header = () => {
                             </a>
                           ))
                         : item.megaMenu?.map((section) => (
-                            <div key={section.title} className="flex flex-col gap-6">
+                            <div
+                              key={section.title}
+                              className="flex flex-col gap-6"
+                            >
                               <h3 className="text-[14px] font-black border-b border-gray-100 pb-3 mb-2">
                                 {section.title}
                               </h3>
@@ -217,7 +265,8 @@ const Header = () => {
           {/* Right: Phone, Auth & Cart Actions */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <div className="hidden xl:flex items-center gap-2 text-xs md:text-sm font-semibold text-gray-500 mr-2 border-r pr-4">
-              <Phone size={14} className="text-yellow-500" /> <span>+91 1111111111</span>
+              <Phone size={14} className="text-yellow-500" />{" "}
+              <span>+91 1111111111</span>
             </div>
 
             {isAuthenticated ? (
@@ -237,7 +286,10 @@ const Header = () => {
                   className="p-2 sm:p-2.5 bg-gray-100 rounded-full hover:bg-red-50 hover:text-red-600 transition-all group cursor-pointer"
                   title="Logout"
                 >
-                  <FaSignOutAlt size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                  <FaSignOutAlt
+                    size={14}
+                    className="group-hover:translate-x-0.5 transition-transform"
+                  />
                 </button>
               </div>
             ) : (
@@ -247,7 +299,9 @@ const Header = () => {
                 title="Account"
               >
                 <User size={16} className="shrink-0" />
-                <span className="hidden sm:inline uppercase text-xs">ACCOUNT</span>
+                <span className="hidden sm:inline uppercase text-xs">
+                  ACCOUNT
+                </span>
               </Link>
             )}
 
@@ -256,8 +310,13 @@ const Header = () => {
               className="flex items-center justify-center sm:gap-2 bg-[#facc15] w-9 h-9 sm:w-auto sm:h-auto sm:px-4 sm:py-2 rounded-full text-xs font-black shadow-md hover:bg-black hover:text-white transition-all duration-300 cursor-pointer relative"
               title="View Cart"
             >
-              <ShoppingBasket size={16} className="shrink-0 text-black sm:text-inherit" />
-              <span className="hidden sm:inline">RS. {cartTotal.toFixed(2)} ({itemCount})</span>
+              <ShoppingBasket
+                size={16}
+                className="shrink-0 text-black sm:text-inherit"
+              />
+              <span className="hidden sm:inline">
+                RS. {cartTotal.toFixed(2)} ({itemCount})
+              </span>
               {itemCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-black text-[#facc15] text-[10px] w-4 h-4 rounded-full flex items-center justify-center sm:hidden font-black">
                   {itemCount}
@@ -283,7 +342,13 @@ const Header = () => {
       >
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-            <Image src="/Img/logo.webp" alt="Everace Logo" width={130} height={32} priority />
+            <Image
+              src="/Img/logo.webp"
+              alt="Everace Logo"
+              width={130}
+              height={32}
+              priority
+            />
           </Link>
           <button
             onClick={() => setIsMobileMenuOpen(false)}
@@ -301,22 +366,34 @@ const Header = () => {
                 <div
                   onClick={() => {
                     if (item.hasDropdown) {
-                      setExpandedMobileItem(expandedMobileItem === item.name ? null : item.name);
+                      setExpandedMobileItem(
+                        expandedMobileItem === item.name ? null : item.name,
+                      );
                     } else {
                       setIsMobileMenuOpen(false);
                     }
                   }}
                   className="flex items-center justify-between py-2.5 text-sm font-black text-gray-900 uppercase tracking-tight cursor-pointer hover:text-yellow-600 transition-colors"
                 >
-                  <span className={item.name === "Shop" ? "text-yellow-600 flex items-center gap-1.5" : ""}>
+                  <span
+                    className={
+                      item.name === "Shop"
+                        ? "text-yellow-600 flex items-center gap-1.5"
+                        : ""
+                    }
+                  >
                     {item.name}
-                    {item.name === "Shop" && <FaStar size={12} className="text-[#facc15]" />}
+                    {item.name === "Shop" && (
+                      <FaStar size={12} className="text-[#facc15]" />
+                    )}
                   </span>
                   {item.hasDropdown && (
                     <ChevronDown
                       size={16}
                       className={`text-gray-400 transition-transform duration-200 ${
-                        expandedMobileItem === item.name ? "rotate-180 text-yellow-600" : ""
+                        expandedMobileItem === item.name
+                          ? "rotate-180 text-yellow-600"
+                          : ""
                       }`}
                     />
                   )}
@@ -338,7 +415,9 @@ const Header = () => {
                         ))
                       : item.megaMenu?.map((section) => (
                           <div key={section.title} className="space-y-1.5 pt-2">
-                            <p className="text-[11px] font-black uppercase text-gray-900">{section.title}</p>
+                            <p className="text-[11px] font-black uppercase text-gray-900">
+                              {section.title}
+                            </p>
                             <div className="pl-2 space-y-1.5">
                               {section.items.map((sub) => (
                                 <a
@@ -366,10 +445,22 @@ const Header = () => {
             <span>+91 1111111111</span>
           </div>
           <div className="flex gap-4 pt-2">
-            <FaFacebookF size={16} className="text-gray-600 hover:text-yellow-600 cursor-pointer transition-colors" />
-            <FaInstagram size={16} className="text-gray-600 hover:text-yellow-600 cursor-pointer transition-colors" />
-            <FaLinkedinIn size={16} className="text-gray-600 hover:text-yellow-600 cursor-pointer transition-colors" />
-            <FaYoutube size={16} className="text-gray-600 hover:text-yellow-600 cursor-pointer transition-colors" />
+            <FaFacebookF
+              size={16}
+              className="text-gray-600 hover:text-yellow-600 cursor-pointer transition-colors"
+            />
+            <FaInstagram
+              size={16}
+              className="text-gray-600 hover:text-yellow-600 cursor-pointer transition-colors"
+            />
+            <FaLinkedinIn
+              size={16}
+              className="text-gray-600 hover:text-yellow-600 cursor-pointer transition-colors"
+            />
+            <FaYoutube
+              size={16}
+              className="text-gray-600 hover:text-yellow-600 cursor-pointer transition-colors"
+            />
           </div>
         </div>
       </aside>
