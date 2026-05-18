@@ -219,10 +219,10 @@ const Header = () => {
           
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 border-2 border-yellow-100 px-4 py-2 rounded-full text-xs font-bold bg-yellow-50/50">
+              <Link href="/profile" className="flex items-center gap-2 border-2 border-yellow-100 px-4 py-2 rounded-full text-xs font-bold bg-yellow-50/50 hover:bg-yellow-100/80 transition-colors cursor-pointer">
                 <User size={16} className="text-yellow-600" /> 
                 <span className="uppercase">{user?.firstName}</span>
-              </div>
+              </Link>
               <button 
                 onClick={logout}
                 className="p-2.5 bg-gray-100 rounded-full hover:bg-red-50 hover:text-red-600 transition-all group"
