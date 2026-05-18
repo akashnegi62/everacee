@@ -4,6 +4,7 @@ import { motion, PanInfo } from "framer-motion";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { useCart } from "@/context/CartContext";
 
 const products = [
   {
@@ -74,6 +75,7 @@ const products = [
 ];
 
 const ProductSec = () => {
+  const { addToCart } = useCart();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(4);
 
@@ -240,8 +242,10 @@ const ProductSec = () => {
                       </div>
 
                       {/* Action Button (Pill Style) */}
-                      <button className="w-full py-3 sm:py-4 border-2 border-gray-900 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] hover:bg-gray-900 hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg">
-                        Choose options
+                      <button 
+                        onClick={() => addToCart({ id: `prod-${product.id}`, name: product.name, price: product.price, image: product.image })}
+                        className="w-full py-3 sm:py-4 border-2 border-gray-900 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] hover:bg-gray-900 hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg">
+                        Add to Cart
                       </button>
                     </motion.div>
                   ))}

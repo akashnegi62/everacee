@@ -1,79 +1,14 @@
 "use client";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { Eye, Heart, ArrowLeftRight } from "lucide-react";
-
-const allProducts = [
-  {
-    id: 1,
-    name: "Almond-healthy fat, magnesium and protein snacks",
-    price: "44.00",
-    status: "New",
-    rating: 4.5,
-    image: "/Img/almonds.jpg",
-  },
-  {
-    id: 2,
-    name: "Nuts snacks mix with different exotic fruits",
-    price: "21.00",
-    oldPrice: "24.00",
-    status: "-12%",
-    rating: 4,
-    image: "/Img/almonds.jpg",
-  },
-  {
-    id: 3,
-    name: "Kashmiri Walnuts",
-    price: "21.00",
-    oldPrice: "24.00",
-    status: "-12%",
-    rating: 4,
-    image: "/Img/almonds.jpg",
-  },
-  {
-    id: 4,
-    name: "Nuts snacks mix big pack for everyday life",
-    price: "36.00",
-    status: "New",
-    rating: 3,
-    image: "/Img/almonds.jpg",
-  },
-  {
-    id: 5,
-    name: "Kashmiri Almond",
-    price: "44.00",
-    status: "New",
-    rating: 4.5,
-    image: "/Img/almonds.jpg",
-  },
-  {
-    id: 6,
-    name: "Kashmiri Blueberry Preserve",
-    price: "36.00",
-    status: "New",
-    rating: 3,
-    image: "/Img/almonds.jpg",
-  },
-  {
-    id: 7,
-    name: "Kashmiri Redberry Preserve",
-    price: "36.00",
-    status: "New",
-    rating: 3,
-    image: "/Img/almonds.jpg",
-  },
-  {
-    id: 8,
-    name: "Kashmiri Blackberry Preserve",
-    price: "36.00",
-    status: "New",
-    rating: 3,
-    image: "/Img/almonds.jpg",
-  },
-];
+import { useCart } from "@/context/CartContext";
+import { mockProducts as allProducts } from "@/lib/mockProducts";
 
 const AllProduct = () => {
+  const { addToCart } = useCart();
   return (
     <section className="py-20 bg-[#fdfbf9]">
       <div className="max-w-7xl mx-auto px-6">
@@ -113,25 +48,25 @@ const AllProduct = () => {
 
                 {/* Secondary Actions (Visible on Hover) */}
                 <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                  <button className="p-2 bg-white rounded-full shadow-md hover:bg-[#facc15] transition-colors">
+                  <Link href={`/product/${product.id}`} className="p-2 bg-white text-gray-800 rounded-full shadow-md hover:bg-[#facc15] transition-colors flex items-center justify-center">
                     <Eye size={16} />
-                  </button>
-                  <button className="p-2 bg-white rounded-full shadow-md hover:bg-[#facc15] transition-colors">
+                  </Link>
+                  <button className="p-2 bg-white rounded-full shadow-md hover:bg-[#facc15] transition-colors cursor-pointer">
                     <Heart size={16} />
                   </button>
-                  <button className="p-2 bg-white rounded-full shadow-md hover:bg-[#facc15] transition-colors">
+                  <button className="p-2 bg-white rounded-full shadow-md hover:bg-[#facc15] transition-colors cursor-pointer">
                     <ArrowLeftRight size={16} />
                   </button>
                 </div>
 
-                <div className="relative w-full h-full">
+                <Link href={`/product/${product.id}`} className="relative w-full h-full block">
                   <Image
                     src={product.image}
                     alt={product.name}
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                </div>
+                </Link>
               </div>
 
               {/* Price & Rating Row */}
@@ -148,9 +83,9 @@ const AllProduct = () => {
               </div>
 
               {/* Title */}
-              <h3 className="text-sm font-bold text-gray-800 mb-3 h-10 line-clamp-2 px-2 leading-tight">
+              <Link href={`/product/${product.id}`} className="text-sm font-bold text-gray-800 hover:text-yellow-600 transition-colors mb-3 h-10 line-clamp-2 px-2 leading-tight block">
                 {product.name}
-              </h3>
+              </Link>
 
               {/* Star Rating */}
               <div className="flex items-center gap-1 mb-6">
@@ -174,7 +109,9 @@ const AllProduct = () => {
               </div>
 
               {/* Action Button */}
-              <button className="w-full py-3.5 border-2 border-gray-900 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-all">
+              <button 
+                onClick={() => addToCart({ id: `all-${product.id}`, name: product.name, price: product.price, image: product.image })}
+                className="w-full py-3.5 border-2 border-gray-900 rounded-full text-[11px] font-black uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-all cursor-pointer">
                 Add to Cart
               </button>
             </motion.div>

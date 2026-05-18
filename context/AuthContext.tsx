@@ -30,15 +30,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem('accessToken');
-      if (token) {
+      if (token && token !== "undefined" && token !== "null") {
         try {
           const res = await authApi.getMe();
-          setUser(res.data);
+          const userData = res.data?.data?.user || res.data?.user || res.data;
+          if (userData) {
+            setUser({
+              ...userData,
+              firstName: userData.firstName || userData.first_name,
+              lastName: userData.lastName || userData.last_name,
+            });
+          } else {
+            setUser(null);
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+          }
         } catch (error) {
           console.error("Auth initialization failed", error);
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
+          setUser(null);
         }
+      } else {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        setUser(null);
       }
       setLoading(false);
     };
@@ -48,13 +64,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (data: any) => {
     try {
       const res = await authApi.login(data);
-      const { accessToken, refreshToken, user: userData } = res.data;
+      const payload = res.data?.data || res.data;
+      const { accessToken, refreshToken, user: userData } = payload;
+      
+      if (!accessToken || !userData) {
+        throw new Error("Invalid response from server");
+      }
+
       localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      setUser(userData);
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
+      setUser({
+        ...userData,
+        firstName: userData.firstName || userData.first_name,
+        lastName: userData.lastName || userData.last_name,
+      });
       router.push('/');
     } catch (error: any) {
-      throw error.response?.data?.message || "Login failed";
+      throw error.response?.data?.message || error.message || "Login failed";
     }
   };
 

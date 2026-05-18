@@ -16,7 +16,7 @@ api.interceptors.request.use(
       typeof window !== "undefined"
         ? localStorage.getItem("accessToken")
         : null;
-    if (token) {
+    if (token && token !== "undefined" && token !== "null") {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -36,17 +36,19 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem("refreshToken");
-        if (refreshToken) {
+        if (refreshToken && refreshToken !== "undefined" && refreshToken !== "null") {
           const res = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
             refreshToken,
           });
-          const { accessToken } = res.data;
+          const accessToken = res.data?.data?.accessToken || res.data?.accessToken;
 
-          localStorage.setItem("accessToken", accessToken);
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-
-          return api(originalRequest);
+          if (accessToken) {
+            localStorage.setItem("accessToken", accessToken);
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            return api(originalRequest);
+          }
         }
+        throw new Error("Refresh token missing or invalid");
       } catch {
         // Refresh token failed, logout user
         localStorage.removeItem("accessToken");

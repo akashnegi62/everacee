@@ -2,6 +2,7 @@
 import React from "react";
 import { Plus, Search, Edit, Trash2 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 const products = [
   {
@@ -51,10 +52,10 @@ export default function AdminProducts() {
           <h2 className="text-3xl font-black tracking-tighter text-gray-900 uppercase">Products</h2>
           <p className="text-gray-500 font-medium text-sm">Manage your inventory and product listings.</p>
         </div>
-        <button className="flex items-center justify-center gap-2 bg-gray-900 text-[#facc15] px-6 py-3 rounded-full font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-lg hover:shadow-[#facc15]/20">
+        <Link href="/admin/products/add" className="flex items-center justify-center gap-2 bg-gray-900 text-[#facc15] px-6 py-3 rounded-full font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-lg hover:shadow-[#facc15]/20">
           <Plus size={18} />
           Add Product
-        </button>
+        </Link>
       </div>
 
       {/* Filters & Search */}

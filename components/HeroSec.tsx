@@ -35,7 +35,7 @@ const HeroSec = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="max-w-2xl text-white"
+          className="max-w-2xl text-white mx-auto flex flex-col items-center text-center"
         >
           <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 text-white px-4 py-1.5 rounded-full mb-6 w-fit shadow-lg">
             <Clock size={16} className="text-[#facc15]" />
@@ -54,7 +54,7 @@ const HeroSec = () => {
             Designed for those who never stop exploring.
           </p>
 
-          <div className="flex gap-4">
+          <div className="flex justify-center gap-4">
             <button className="bg-[#facc15] text-black px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest flex items-center gap-2 hover:bg-white transition-colors shadow-2xl group">
               Shop Now
               <ArrowRight

@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 
 const navItems = [
@@ -95,6 +96,7 @@ const navItems = [
 const Header = () => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const { user, logout, isAuthenticated } = useAuth();
+  const { cartTotal, itemCount } = useCart();
 
   return (
     <header className="w-full font-sans absolute top-0 left-0 z-50 bg-white/90 backdrop-blur-md border-b border-white/20">
@@ -234,9 +236,9 @@ const Header = () => {
               <User size={16} /> ACCOUNT
             </Link>
           )}
-          <button className="flex items-center gap-2 bg-[#facc15] px-4 py-2 rounded-full text-xs font-black shadow-md hover:bg-black hover:text-white transition-all duration-300">
-            <ShoppingBasket size={16} /> RS. 0.00 (0)
-          </button>
+          <Link href="/cart" className="flex items-center gap-2 bg-[#facc15] px-4 py-2 rounded-full text-xs font-black shadow-md hover:bg-black hover:text-white transition-all duration-300">
+            <ShoppingBasket size={16} /> RS. {cartTotal.toFixed(2)} ({itemCount})
+          </Link>
         </div>
       </div>
     </header>
