@@ -31,7 +31,12 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h3 className="font-bold text-lg mb-4">Recent Orders</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-lg">Recent Orders</h3>
+            <Link href="/admin/orders" className="text-sm font-bold text-[#facc15] bg-black px-3 py-1.5 rounded-lg hover:bg-gray-900 transition-colors">
+              View All
+            </Link>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
@@ -77,6 +82,10 @@ export default function AdminDashboard() {
             <Link href="/admin/products/add" className="w-full py-3 px-4 bg-black text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors text-left flex justify-between items-center cursor-pointer">
               Add New Product
               <Package size={16} />
+            </Link>
+            <Link href="/admin/orders" className="w-full py-3 px-4 bg-[#facc15] text-black font-black rounded-xl text-sm hover:bg-[#facc15]/90 transition-colors text-left flex justify-between items-center cursor-pointer shadow-sm">
+              Manage Orders
+              <ShoppingBag size={16} />
             </Link>
             <Link href="/admin/users" className="w-full py-3 px-4 bg-gray-50 text-gray-900 border border-gray-200 rounded-xl font-bold text-sm hover:bg-gray-100 transition-colors text-left flex justify-between items-center cursor-pointer">
               Manage Users

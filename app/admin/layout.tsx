@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Package, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Users, Package, ShoppingBag, Warehouse, Tag, Star, Image as ImageIcon, ShieldAlert, Settings, LogOut, Menu, X } from "lucide-react";
 
 export default function AdminLayout({
   children,
@@ -13,12 +13,26 @@ export default function AdminLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const isProductsActive = pathname.startsWith("/admin/products");
+  const isOrdersActive = pathname.startsWith("/admin/orders");
+  const isInventoryActive = pathname.startsWith("/admin/inventory");
+  const isCouponsActive = pathname.startsWith("/admin/coupons");
+  const isReviewsActive = pathname.startsWith("/admin/reviews");
+  const isBannersActive = pathname.startsWith("/admin/banners");
+  const isAdminsActive = pathname.startsWith("/admin/admins");
+  const isSettingsActive = pathname.startsWith("/admin/settings");
   const isUsersActive = pathname.startsWith("/admin/users");
   const isDashboardActive = pathname === "/admin";
 
   const getPageTitle = () => {
     if (pathname.includes("/products/add")) return "Add Product";
     if (isProductsActive) return "Products";
+    if (isOrdersActive) return "Orders";
+    if (isInventoryActive) return "Inventory";
+    if (isCouponsActive) return "Coupons";
+    if (isReviewsActive) return "Reviews";
+    if (isBannersActive) return "Banners";
+    if (isAdminsActive) return "Admins";
+    if (isSettingsActive) return "Settings";
     if (isUsersActive) return "Users";
     return "Dashboard";
   };
@@ -53,6 +67,7 @@ export default function AdminLayout({
 
         <nav className="flex-1 overflow-y-auto py-4">
           <ul className="space-y-1 px-3">
+            <div className="px-3 py-1.5 text-[10px] font-black tracking-widest text-gray-400 uppercase">E-Commerce</div>
             <li>
               <Link
                 href="/admin"
@@ -83,6 +98,78 @@ export default function AdminLayout({
             </li>
             <li>
               <Link
+                href="/admin/inventory"
+                onClick={closeSidebar}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-sm transition-colors cursor-pointer ${
+                  isInventoryActive
+                    ? "bg-[#facc15] text-black shadow-md font-black"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                }`}
+              >
+                <Warehouse size={18} />
+                Inventory
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/admin/orders"
+                onClick={closeSidebar}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-sm transition-colors cursor-pointer ${
+                  isOrdersActive
+                    ? "bg-[#facc15] text-black shadow-md font-black"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                }`}
+              >
+                <ShoppingBag size={18} />
+                Orders
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/admin/coupons"
+                onClick={closeSidebar}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-sm transition-colors cursor-pointer ${
+                  isCouponsActive
+                    ? "bg-[#facc15] text-black shadow-md font-black"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                }`}
+              >
+                <Tag size={18} />
+                Coupons
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/admin/reviews"
+                onClick={closeSidebar}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-sm transition-colors cursor-pointer ${
+                  isReviewsActive
+                    ? "bg-[#facc15] text-black shadow-md font-black"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                }`}
+              >
+                <Star size={18} />
+                Reviews
+              </Link>
+            </li>
+
+            <div className="pt-4 px-3 py-1.5 text-[10px] font-black tracking-widest text-gray-400 uppercase">Management</div>
+            <li>
+              <Link
+                href="/admin/banners"
+                onClick={closeSidebar}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-sm transition-colors cursor-pointer ${
+                  isBannersActive
+                    ? "bg-[#facc15] text-black shadow-md font-black"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                }`}
+              >
+                <ImageIcon size={18} />
+                Banners
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/admin/users"
                 onClick={closeSidebar}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-sm transition-colors cursor-pointer ${
@@ -93,6 +180,34 @@ export default function AdminLayout({
               >
                 <Users size={18} />
                 Users
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/admin/admins"
+                onClick={closeSidebar}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-sm transition-colors cursor-pointer ${
+                  isAdminsActive
+                    ? "bg-[#facc15] text-black shadow-md font-black"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                }`}
+              >
+                <ShieldAlert size={18} />
+                Admins
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/admin/settings"
+                onClick={closeSidebar}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-sm transition-colors cursor-pointer ${
+                  isSettingsActive
+                    ? "bg-[#facc15] text-black shadow-md font-black"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                }`}
+              >
+                <Settings size={18} />
+                Settings
               </Link>
             </li>
           </ul>
