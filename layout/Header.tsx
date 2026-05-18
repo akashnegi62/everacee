@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import {
   User,
@@ -21,96 +22,34 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
+interface NavItem {
+  name: string;
+  href: string;
+  hasDropdown: boolean;
+  isMega?: boolean;
+  subItems?: string[];
+  megaMenu?: { title: string; items: string[] }[];
+}
 
-const navItems = [
+const navItems: NavItem[] = [
   {
     name: "Home",
-    href: "#",
-    hasDropdown: true,
-    subItems: [
-      "Main Home",
-      "Organic Juice Store",
-      "Organic Produce",
-      "Nut Shop",
-      "Healthy Food",
-      "Organic Market",
-      "Landing",
-    ],
+    href: "/",
+    hasDropdown: false,
   },
   {
-    name: "Pages",
-    href: "#",
-    hasDropdown: true,
-    subItems: [
-      "About Us",
-      "Gift Cards",
-      "Reviews",
-      "Our Team",
-      "FAQ",
-      "Error 404",
-      "Coming Soon",
-      "Contact",
-    ],
+    name: "Bestseller",
+    href: "/bestseller",
+    hasDropdown: false,
   },
   {
     name: "Shop",
-    href: "#",
-    hasDropdown: true,
-    isMega: true,
-    megaMenu: [
-      {
-        title: "DRY FRUITS",
-        items: [
-          "Kashmiri Walnuts",
-          "Premium Almonds",
-          "Pistachios",
-          "Cashew Nuts",
-          "Dried Figs",
-        ],
-      },
-      {
-        title: "HONEY & SAFFRON",
-        items: [
-          "Acacia Honey",
-          "Sidr Honey",
-          "Organic Saffron",
-          "Saffron Elixir",
-          "Honey Comb",
-        ],
-      },
-      {
-        title: "SPICES & BERRIES",
-        items: [
-          "Cardamom Pods",
-          "Cinnamon Quills",
-          "Dried Cranberries",
-          "Dried Blueberries",
-          "Black Pepper",
-        ],
-      },
-    ],
+    href: "/shop",
+    hasDropdown: false,
   },
   {
-    name: "Portfolio",
-    href: "#",
-    hasDropdown: true,
-    subItems: [
-      "Portfolio Grid",
-      "Portfolio Masonry",
-      "Portfolio Single",
-      "Harvest Gallery",
-      "Orchard Tours",
-    ],
-  },
-  {
-    name: "Blog",
-    href: "#",
-    hasDropdown: true,
-    subItems: ["Standard", "Masonry", "Post Formats"],
-  },
-  {
-    name: "Contact",
-    href: "#",
+    name: "Contact us",
+    href: "/contact",
     hasDropdown: false,
   },
 ];
@@ -123,6 +62,14 @@ const Header = () => {
   );
   const { user, logout, isAuthenticated } = useAuth();
   const { cartTotal, itemCount } = useCart();
+  const pathname = usePathname();
+
+  const isActive = (item: NavItem) => {
+    if (item.href === "/") {
+      return pathname === "/";
+    }
+    return pathname.startsWith(item.href);
+  };
 
   return (
     <>
@@ -185,13 +132,13 @@ const Header = () => {
                 onMouseEnter={() => setHoveredItem(item.name)}
                 onMouseLeave={() => setHoveredItem(null)}
               >
-                <a
+                <Link
                   href={item.href}
                   className={`flex items-center gap-1 transition-colors duration-300 ${
-                    hoveredItem === item.name
+                    hoveredItem === item.name || isActive(item)
                       ? "text-yellow-600"
                       : "text-gray-800"
-                  } ${item.name === "Shop" ? "text-yellow-600" : ""}`}
+                  }`}
                 >
                   {item.name}
                   {item.name === "Shop" && (
@@ -203,11 +150,11 @@ const Header = () => {
                       className={`transition-transform duration-300 ${hoveredItem === item.name ? "rotate-180" : ""}`}
                     />
                   )}
-                </a>
+                </Link>
 
-                {/* Active Indicator for Shop */}
-                {item.name === "Shop" && (
-                  <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-yellow-500" />
+                {/* Active Indicator */}
+                {isActive(item) && (
+                  <div className="absolute bottom-1 left-0 w-full h-0.5 bg-yellow-500" />
                 )}
 
                 {/* Dropdowns */}
@@ -375,18 +322,20 @@ const Header = () => {
                   }}
                   className="flex items-center justify-between py-2.5 text-sm font-black text-gray-900 uppercase tracking-tight cursor-pointer hover:text-yellow-600 transition-colors"
                 >
-                  <span
+                  <Link
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
                     className={
-                      item.name === "Shop"
+                      isActive(item)
                         ? "text-yellow-600 flex items-center gap-1.5"
-                        : ""
+                        : "text-gray-900 flex items-center gap-1.5"
                     }
                   >
                     {item.name}
                     {item.name === "Shop" && (
                       <FaStar size={12} className="text-[#facc15]" />
                     )}
-                  </span>
+                  </Link>
                   {item.hasDropdown && (
                     <ChevronDown
                       size={16}

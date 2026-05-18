@@ -55,7 +55,7 @@ const ProductSec = () => {
   };
 
   return (
-    <section className="py-24 px-4 sm:px-8 bg-[#fdfbf9] overflow-hidden">
+    <section id="bestseller" className="py-24 px-4 sm:px-8 bg-[#fdfbf9] overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="flex flex-col items-center mb-16 text-center gap-6">
