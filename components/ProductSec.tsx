@@ -3,9 +3,10 @@ import React, { useState, useEffect } from "react";
 import { motion, PanInfo } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Heart } from "lucide-react";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { mockProducts } from "@/lib/mockProducts";
 
 const productIds = [3, 9, 5, 6, 10, 11, 12, 13];
@@ -13,6 +14,7 @@ const products = productIds.map((id) => mockProducts.find((p) => p.id === id)!).
 
 const ProductSec = () => {
   const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(4);
 
@@ -130,6 +132,44 @@ const ProductSec = () => {
                             {product.discount || product.status}
                           </span>
                         ) : null}
+
+                        {/* Secondary Actions (Visible on Hover) */}
+                        <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                          <Link
+                            href={`/product/${product.id}`}
+                            className="p-2 bg-white text-gray-800 rounded-full shadow-md hover:bg-[#facc15] transition-colors flex items-center justify-center cursor-pointer"
+                          >
+                            <Eye size={16} />
+                          </Link>
+                          <button
+                            onClick={() =>
+                              toggleWishlist({
+                                id: `prod-${product.id}`,
+                                name: product.name,
+                                price: product.price,
+                                image: product.image,
+                              })
+                            }
+                            className={`p-2 rounded-full shadow-md transition-colors cursor-pointer ${
+                              isInWishlist(`prod-${product.id}`)
+                                ? "bg-red-500 text-white hover:bg-red-600"
+                                : "bg-white text-gray-800 hover:bg-[#facc15]"
+                            }`}
+                            title={
+                              isInWishlist(`prod-${product.id}`)
+                                ? "Remove from Wishlist"
+                                : "Add to Wishlist"
+                            }
+                          >
+                            <Heart
+                              size={16}
+                              className={
+                                isInWishlist(`prod-${product.id}`) ? "fill-white text-red-500" : ""
+                              }
+                            />
+                          </button>
+                        </div>
+
                         <Link href={`/product/${product.id}`} className="relative w-full h-full block">
                           <Image
                             src={product.image}

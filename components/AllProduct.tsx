@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
-import { Eye, Heart, ArrowLeftRight } from "lucide-react";
+import { Eye, Heart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { mockProducts as allProducts } from "@/lib/mockProducts";
@@ -18,7 +18,10 @@ const AllProduct: React.FC<AllProductProps> = ({ showFilter = false }) => {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const categories = ["All", ...Array.from(new Set(allProducts.map((p) => p.category)))];
+  const categories = [
+    "All",
+    ...Array.from(new Set(allProducts.map((p) => p.category))),
+  ];
 
   const filteredProducts =
     selectedCategory === "All"
@@ -63,7 +66,10 @@ const AllProduct: React.FC<AllProductProps> = ({ showFilter = false }) => {
         )}
 
         {/* Product Grid */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <motion.div
+          layout
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+        >
           <AnimatePresence>
             {filteredProducts.map((product) => (
               <motion.div
@@ -106,16 +112,25 @@ const AllProduct: React.FC<AllProductProps> = ({ showFilter = false }) => {
                           ? "bg-red-500 text-white hover:bg-red-600"
                           : "bg-white text-gray-800 hover:bg-[#facc15]"
                       }`}
-                      title={isInWishlist(`all-${product.id}`) ? "Remove from Wishlist" : "Add to Wishlist"}
+                      title={
+                        isInWishlist(`all-${product.id}`)
+                          ? "Remove from Wishlist"
+                          : "Add to Wishlist"
+                      }
                     >
-                      <Heart size={16} className={isInWishlist(`all-${product.id}`) ? "fill-white" : ""} />
-                    </button>
-                    <button className="p-2 bg-white text-gray-800 rounded-full shadow-md hover:bg-[#facc15] transition-colors cursor-pointer">
-                      <ArrowLeftRight size={16} />
+                      <Heart
+                        size={16}
+                        className={
+                          isInWishlist(`all-${product.id}`) ? "fill-white" : ""
+                        }
+                      />
                     </button>
                   </div>
 
-                  <Link href={`/product/${product.id}`} className="relative w-full h-full block">
+                  <Link
+                    href={`/product/${product.id}`}
+                    className="relative w-full h-full block"
+                  >
                     <Image
                       src={product.image}
                       alt={product.name}
@@ -128,9 +143,13 @@ const AllProduct: React.FC<AllProductProps> = ({ showFilter = false }) => {
                 {/* Price & Rating Row */}
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <span className="text-sm font-bold text-gray-400">From</span>
-                  <span className="text-xl font-black text-gray-900">${product.price}</span>
+                  <span className="text-xl font-black text-gray-900">
+                    ${product.price}
+                  </span>
                   {product.oldPrice && (
-                    <span className="text-sm text-gray-400 line-through">${product.oldPrice}</span>
+                    <span className="text-sm text-gray-400 line-through">
+                      ${product.oldPrice}
+                    </span>
                   )}
                 </div>
 
