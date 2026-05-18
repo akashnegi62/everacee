@@ -4,13 +4,20 @@ import { useCart } from "@/context/CartContext";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag, CheckCircle2 } from "lucide-react";
+import { Trash2, Plus, Minus, ArrowLeft, ShoppingBag, CheckCircle2, ChevronDown } from "lucide-react";
 import toast from "react-hot-toast";
+import { mockProducts } from "@/lib/mockProducts";
 
 const CartPage = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, cartTotal, itemCount } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | number | null>(null);
+
+  const getProduct = (id: string | number) => {
+    const cleanId = String(id).replace("all-", "").replace("prod-", "");
+    return mockProducts.find((p) => String(p.id) === cleanId);
+  };
 
   const handleCheckout = () => {
     setIsCheckingOut(true);
@@ -102,93 +109,154 @@ const CartPage = () => {
                   </div>
 
                   <AnimatePresence>
-                    {cart.map((item) => (
-                      <motion.div
-                        key={item.id}
-                        layout
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="flex items-center justify-between gap-4 py-4 border-b border-gray-100 last:border-0"
-                      >
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-[#f8f8f8] rounded-2xl overflow-hidden shrink-0 border border-gray-100 shadow-inner">
-                            <Image
-                              src={item.image}
-                              alt={item.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                          <div>
-                            <h3 className="font-black text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 uppercase">
-                              {item.name}
-                            </h3>
-                            <p className="font-bold text-xs sm:text-sm text-[#facc15] mt-1">
-                              ${item.price.toFixed(2)}
-                            </p>
-                            
-                            {/* Mobile total and quantity controls */}
-                            <div className="flex items-center gap-3 mt-3 sm:hidden">
-                              <div className="flex items-center border border-gray-200 rounded-full bg-gray-50 p-1">
+                    {cart.map((item) => {
+                      const prod = getProduct(item.id);
+                      const isExpanded = expandedId === item.id;
+                      return (
+                        <motion.div
+                          key={item.id}
+                          layout
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          className="py-4 border-b border-gray-100 last:border-0"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div
+                              onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                              className="flex items-center gap-4 flex-1 cursor-pointer group"
+                              title="Click to view product description"
+                            >
+                              <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-[#f8f8f8] rounded-2xl overflow-hidden shrink-0 border border-gray-100 shadow-inner group-hover:border-yellow-300 transition-colors">
+                                <Image
+                                  src={item.image}
+                                  alt={item.name}
+                                  fill
+                                  className="object-cover group-hover:scale-105 transition-transform"
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-black text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 uppercase group-hover:text-yellow-600 transition-colors">
+                                    {item.name}
+                                  </h3>
+                                  <ChevronDown
+                                    size={16}
+                                    className={`text-gray-400 group-hover:text-yellow-600 transition-transform duration-300 shrink-0 ${
+                                      isExpanded ? "rotate-180" : ""
+                                    }`}
+                                  />
+                                </div>
+                                <p className="font-bold text-xs sm:text-sm text-[#facc15] mt-1">
+                                  ${item.price.toFixed(2)}
+                                </p>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mt-0.5">
+                                  Click to view details
+                                </span>
+
+                                {/* Mobile total and quantity controls */}
+                                <div className="flex items-center gap-3 mt-3 sm:hidden" onClick={(e) => e.stopPropagation()}>
+                                  <div className="flex items-center border border-gray-200 rounded-full bg-gray-50 p-1">
+                                    <button
+                                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                      className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white hover:shadow transition-all"
+                                    >
+                                      <Minus size={12} />
+                                    </button>
+                                    <span className="w-8 text-center text-xs font-black">{item.quantity}</span>
+                                    <button
+                                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                      className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white hover:shadow transition-all"
+                                    >
+                                      <Plus size={12} />
+                                    </button>
+                                  </div>
+                                  <button
+                                    onClick={() => removeFromCart(item.id)}
+                                    className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Desktop quantity controls */}
+                            <div className="hidden sm:flex items-center gap-6">
+                              <div className="flex items-center border-2 border-gray-100 rounded-full bg-gray-50/50 p-1.5 shadow-sm">
                                 <button
                                   onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                  className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white hover:shadow transition-all"
+                                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white hover:shadow-md transition-all font-bold"
                                 >
-                                  <Minus size={12} />
+                                  <Minus size={14} />
                                 </button>
-                                <span className="w-8 text-center text-xs font-black">{item.quantity}</span>
+                                <span className="w-10 text-center text-sm font-black">{item.quantity}</span>
                                 <button
                                   onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                  className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-white hover:shadow transition-all"
+                                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white hover:shadow-md transition-all font-bold"
                                 >
-                                  <Plus size={12} />
+                                  <Plus size={14} />
                                 </button>
                               </div>
+
+                              <div className="text-right min-w-[80px]">
+                                <p className="font-black text-gray-900 text-lg">
+                                  ${(item.price * item.quantity).toFixed(2)}
+                                </p>
+                              </div>
+
                               <button
                                 onClick={() => removeFromCart(item.id)}
-                                className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                                className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all cursor-pointer"
+                                title="Remove item"
                               >
-                                <Trash2 size={16} />
+                                <Trash2 size={18} />
                               </button>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Desktop quantity controls */}
-                        <div className="hidden sm:flex items-center gap-6">
-                          <div className="flex items-center border-2 border-gray-100 rounded-full bg-gray-50/50 p-1.5 shadow-sm">
-                            <button
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white hover:shadow-md transition-all font-bold"
-                            >
-                              <Minus size={14} />
-                            </button>
-                            <span className="w-10 text-center text-sm font-black">{item.quantity}</span>
-                            <button
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white hover:shadow-md transition-all font-bold"
-                            >
-                              <Plus size={14} />
-                            </button>
-                          </div>
-
-                          <div className="text-right min-w-[80px]">
-                            <p className="font-black text-gray-900 text-lg">
-                              ${(item.price * item.quantity).toFixed(2)}
-                            </p>
-                          </div>
-
-                          <button
-                            onClick={() => removeFromCart(item.id)}
-                            className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
-                            title="Remove item"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
+                          {/* Expanded Description Box */}
+                          <AnimatePresence>
+                            {isExpanded && prod && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                                className="overflow-hidden mt-4 bg-yellow-50/50 border border-yellow-100 rounded-2xl p-5 shadow-inner"
+                              >
+                                <div className="flex items-center justify-between border-b border-yellow-200/60 pb-2.5 mb-3">
+                                  <h4 className="font-black text-xs uppercase tracking-wider text-gray-900">
+                                    Product Information & Benefits
+                                  </h4>
+                                  <Link
+                                    href={`/product/${prod.id}`}
+                                    className="text-xs font-black text-yellow-600 hover:underline uppercase tracking-tight"
+                                  >
+                                    View Full Page &rarr;
+                                  </Link>
+                                </div>
+                                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-medium">
+                                  {prod.description}
+                                </p>
+                                {prod.benefits && prod.benefits.length > 0 && (
+                                  <div className="mt-3.5 flex flex-wrap gap-2">
+                                    {prod.benefits.map((benefit, idx) => (
+                                      <span
+                                        key={idx}
+                                        className="bg-white text-gray-800 text-[11px] font-bold px-3 py-1 rounded-full shadow-2xs border border-gray-100"
+                                      >
+                                        ✓ {benefit}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </motion.div>
+                      );
+                    })}
                   </AnimatePresence>
                 </div>
 
