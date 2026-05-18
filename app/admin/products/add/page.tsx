@@ -2,7 +2,19 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Upload, Package, DollarSign, Layers } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Upload,
+  Package,
+  DollarSign,
+  Layers,
+  Sparkles,
+  ListFilter,
+  Plus,
+  Trash2,
+  Tag,
+} from "lucide-react";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
 
@@ -10,13 +22,21 @@ export default function AddProductPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState("/Img/walnuts.jpg");
+
   const [formData, setFormData] = useState({
     name: "",
     price: "",
+    oldPrice: "",
     stock: "",
     category: "Dry Fruits",
     status: "In Stock",
     description: "",
+    benefits: ["Rich in Vitamin E & Antioxidants", "Supports Heart Health & Immunity"],
+    specs: [
+      { label: "Origin", value: "Kashmir Valley" },
+      { label: "Weight", value: "500g Pack" },
+      { label: "Shelf Life", value: "12 Months" },
+    ],
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -30,6 +50,40 @@ export default function AddProductPage() {
       const url = URL.createObjectURL(file);
       setImagePreview(url);
     }
+  };
+
+  // Dynamic Health Benefits handlers
+  const handleBenefitChange = (index: number, value: string) => {
+    setFormData((prev) => {
+      const updated = [...prev.benefits];
+      updated[index] = value;
+      return { ...prev, benefits: updated };
+    });
+  };
+
+  const addBenefit = () => {
+    setFormData((prev) => ({ ...prev, benefits: [...prev.benefits, ""] }));
+  };
+
+  const removeBenefit = (index: number) => {
+    setFormData((prev) => ({ ...prev, benefits: prev.benefits.filter((_, i) => i !== index) }));
+  };
+
+  // Dynamic Specs handlers
+  const handleSpecChange = (index: number, key: "label" | "value", value: string) => {
+    setFormData((prev) => {
+      const updated = [...prev.specs];
+      updated[index] = { ...updated[index], [key]: value };
+      return { ...prev, specs: updated };
+    });
+  };
+
+  const addSpec = () => {
+    setFormData((prev) => ({ ...prev, specs: [...prev.specs, { label: "", value: "" }] }));
+  };
+
+  const removeSpec = (index: number) => {
+    setFormData((prev) => ({ ...prev, specs: prev.specs.filter((_, i) => i !== index) }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,7 +103,7 @@ export default function AddProductPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-12">
+    <div className="max-w-6xl mx-auto space-y-8 pb-16">
       {/* Back Link */}
       <Link
         href="/admin/products"
@@ -61,107 +115,221 @@ export default function AddProductPage() {
       {/* Header */}
       <div>
         <h2 className="text-3xl font-black tracking-tighter text-gray-900 uppercase">Add New Product</h2>
-        <p className="text-gray-500 font-medium text-sm">Create a new product listing for your store catalog.</p>
+        <p className="text-gray-500 font-medium text-sm">
+          Create a new product listing with full descriptions, health benefits, and technical specifications.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Form Fields */}
-        <div className="lg:col-span-2 space-y-6 bg-white p-8 rounded-4xl border border-gray-100 shadow-xl">
-          <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight pb-4 border-b border-gray-100 flex items-center gap-2">
-            <Package size={20} className="text-[#facc15]" /> Product Details
-          </h3>
+        {/* Main Form Columns (2 Columns) */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Card 1: Basic Information */}
+          <div className="bg-white p-8 rounded-4xl border border-gray-100 shadow-xl space-y-6">
+            <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight pb-4 border-b border-gray-100 flex items-center gap-2">
+              <Package size={20} className="text-[#facc15]" /> Basic Product Details
+            </h3>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-black uppercase text-gray-700 mb-2">Product Name</label>
-              <input
-                type="text"
-                name="name"
-                required
-                placeholder="e.g. Premium Kashmiri Walnuts"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs font-black uppercase text-gray-700 mb-2">Price (₹)</label>
-                <div className="relative">
-                  <DollarSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="number"
-                    step="0.01"
-                    name="price"
-                    required
-                    placeholder="0.00"
-                    value={formData.price}
+                <label className="block text-xs font-black uppercase text-gray-700 mb-2">Product Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  placeholder="e.g. Premium Kashmiri Walnuts"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-black uppercase text-gray-700 mb-2">Price (₹)</label>
+                  <div className="relative">
+                    <DollarSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="price"
+                      required
+                      placeholder="0.00"
+                      value={formData.price}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-11 pr-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase text-gray-700 mb-2">Old Price (Optional)</label>
+                  <div className="relative">
+                    <Tag size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="oldPrice"
+                      placeholder="0.00"
+                      value={formData.oldPrice}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-11 pr-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase text-gray-700 mb-2">Initial Stock</label>
+                  <div className="relative">
+                    <Layers size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="number"
+                      name="stock"
+                      required
+                      placeholder="100"
+                      value={formData.stock}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-11 pr-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black uppercase text-gray-700 mb-2">Category</label>
+                  <select
+                    name="category"
+                    value={formData.category}
                     onChange={handleChange}
-                    className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-11 pr-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
-                  />
+                    className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all cursor-pointer"
+                  >
+                    <option value="Dry Fruits">Dry Fruits</option>
+                    <option value="Honey">Honey</option>
+                    <option value="Berries">Berries</option>
+                    <option value="Spices">Spices</option>
+                    <option value="Nuts">Nuts</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase text-gray-700 mb-2">Status</label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all cursor-pointer"
+                  >
+                    <option value="In Stock">In Stock</option>
+                    <option value="Low Stock">Low Stock</option>
+                    <option value="Out of Stock">Out of Stock</option>
+                    <option value="New">New</option>
+                    <option value="-15%">-15% Sale</option>
+                  </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase text-gray-700 mb-2">Initial Stock</label>
-                <div className="relative">
-                  <Layers size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <label className="block text-xs font-black uppercase text-gray-700 mb-2">Full Description</label>
+                <textarea
+                  name="description"
+                  rows={5}
+                  placeholder="Describe the product, its harvesting origin, flavor notes, and organic processing..."
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all resize-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Key Health Benefits */}
+          <div className="bg-white p-8 rounded-4xl border border-gray-100 shadow-xl space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight flex items-center gap-2">
+                <Sparkles size={20} className="text-[#facc15]" /> Key Health Benefits
+              </h3>
+              <button
+                type="button"
+                onClick={addBenefit}
+                className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-900 px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-[#facc15] transition-colors cursor-pointer"
+              >
+                <Plus size={14} /> Add Benefit
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {formData.benefits.map((benefit, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-yellow-50 text-[#facc15] flex items-center justify-center font-black text-xs shrink-0">
+                    {idx + 1}
+                  </span>
                   <input
-                    type="number"
-                    name="stock"
+                    type="text"
                     required
-                    placeholder="100"
-                    value={formData.stock}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-11 pr-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
+                    placeholder="e.g. Rich in Omega-3 Fatty Acids"
+                    value={benefit}
+                    onChange={(e) => handleBenefitChange(idx, e.target.value)}
+                    className="flex-1 bg-gray-50 border-none rounded-2xl py-3 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
                   />
+                  {formData.benefits.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeBenefit(idx)}
+                      className="p-3 text-gray-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Card 3: Technical Specifications */}
+          <div className="bg-white p-8 rounded-4xl border border-gray-100 shadow-xl space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight flex items-center gap-2">
+                <ListFilter size={20} className="text-[#facc15]" /> Technical Specifications
+              </h3>
+              <button
+                type="button"
+                onClick={addSpec}
+                className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-900 px-3 py-1.5 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-[#facc15] transition-colors cursor-pointer"
+              >
+                <Plus size={14} /> Add Spec
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-black uppercase text-gray-700 mb-2">Category</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all cursor-pointer"
-                >
-                  <option value="Dry Fruits">Dry Fruits</option>
-                  <option value="Honey">Honey</option>
-                  <option value="Berries">Berries</option>
-                  <option value="Spices">Spices</option>
-                  <option value="Nuts">Nuts</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase text-gray-700 mb-2">Status</label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all cursor-pointer"
-                >
-                  <option value="In Stock">In Stock</option>
-                  <option value="Low Stock">Low Stock</option>
-                  <option value="Out of Stock">Out of Stock</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-black uppercase text-gray-700 mb-2">Description</label>
-              <textarea
-                name="description"
-                rows={4}
-                placeholder="Describe the product, its origin, flavor profile, and nutritional benefits..."
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all resize-none"
-              />
+            <div className="space-y-3">
+              {formData.specs.map((spec, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Label (e.g. Origin)"
+                    value={spec.label}
+                    onChange={(e) => handleSpecChange(idx, "label", e.target.value)}
+                    className="w-1/3 bg-gray-50 border-none rounded-2xl py-3 px-5 text-sm font-bold uppercase text-gray-800 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
+                  />
+                  <input
+                    type="text"
+                    required
+                    placeholder="Value (e.g. Pampore, Kashmir)"
+                    value={spec.value}
+                    onChange={(e) => handleSpecChange(idx, "value", e.target.value)}
+                    className="flex-1 bg-gray-50 border-none rounded-2xl py-3 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
+                  />
+                  {formData.specs.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeSpec(idx)}
+                      className="p-3 text-gray-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Package, ShoppingBag, Users, TrendingUp } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -73,14 +74,14 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h3 className="font-bold text-lg mb-4">Quick Actions</h3>
           <div className="space-y-3">
-            <button className="w-full py-3 px-4 bg-black text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors text-left flex justify-between items-center">
+            <Link href="/admin/products/add" className="w-full py-3 px-4 bg-black text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors text-left flex justify-between items-center cursor-pointer">
               Add New Product
               <Package size={16} />
-            </button>
-            <button className="w-full py-3 px-4 bg-gray-50 text-gray-900 border border-gray-200 rounded-xl font-bold text-sm hover:bg-gray-100 transition-colors text-left flex justify-between items-center">
+            </Link>
+            <Link href="/admin/users" className="w-full py-3 px-4 bg-gray-50 text-gray-900 border border-gray-200 rounded-xl font-bold text-sm hover:bg-gray-100 transition-colors text-left flex justify-between items-center cursor-pointer">
               Manage Users
               <Users size={16} />
-            </button>
+            </Link>
           </div>
         </div>
       </div>
