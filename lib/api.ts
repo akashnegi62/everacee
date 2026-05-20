@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_BASE_URL = "/api";
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -37,7 +37,7 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem("refreshToken");
         if (refreshToken && refreshToken !== "undefined" && refreshToken !== "null") {
-          const res = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
+          const res = await axios.post(`${API_BASE_URL}/v1/auth/refresh-token`, {
             refreshToken,
           });
           const accessToken = res.data?.data?.accessToken || res.data?.accessToken;
@@ -53,8 +53,10 @@ api.interceptors.response.use(
         // Refresh token failed, logout user
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
+        localStorage.removeItem("authUser");
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          const isAdminRoute = window.location.pathname.startsWith("/admin");
+          window.location.href = isAdminRoute ? "/admin/login" : "/login";
         }
       }
     }
@@ -63,11 +65,37 @@ api.interceptors.response.use(
 );
 
 export const authApi = {
-  register: (data: any) => api.post("/auth/register", data),
-  login: (data: any) => api.post("/auth/login", data),
-  logout: () => api.post("/auth/logout"),
-  getMe: () => api.get("/auth/me"),
-  changePassword: (data: any) => api.post("/auth/change-password", data),
+  register: (data: any) => api.post("/v1/auth/register", data),
+  login: (data: any) => api.post("/v1/auth/login", data),
+  loginAdmin: (data: any) => api.post("/v1/auth/admin", data),
+  logout: () => api.post("/v1/auth/logout"),
+  getMe: () => api.get("/v1/auth/me"),
+  changePassword: (data: any) => api.post("/v1/auth/change-password", data),
+};
+
+export const productApi = {
+  create: (data: any) => api.post("/v1/products", data),
+  list: (params?: Record<string, string | number | boolean>) => api.get("/v1/products", { params }),
+  getById: (id: string | number) => api.get(`/v1/products/${id}`),
+  remove: (id: string | number) => api.delete(`/v1/products/${id}`),
+};
+
+export const categoryApi = {
+  getTree: (params?: { status?: "active" | "inactive" }) =>
+    api.get("/v1/categories/tree", { params }),
+};
+
+export const uploadApi = {
+  uploadProductImage: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return axios.post("/api/admin/uploads", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
 };
 
 export default api;

@@ -16,25 +16,27 @@ const BannerSec = () => {
   };
 
   return (
-    <section className="relative w-full min-h-[600px] overflow-hidden flex flex-col lg:flex-row">
+    <section className="relative w-full min-h-150 overflow-hidden flex flex-col lg:flex-row">
       {/* 1. Left Side: Lifestyle Branding */}
-      <div className="relative w-full lg:w-1/2 h-[400px] lg:h-auto bg-white flex items-center justify-center p-10">
+      <div className="relative w-full lg:w-1/2 h-100 lg:h-auto bg-white flex items-center justify-center p-10">
         <Image
           src="/Img/banner1.webp" // Replace with your jars image
           alt="Everace Premium Collection"
           fill
+          sizes="(min-width: 1024px) 50vw, 100vw"
           className="object-cover"
           priority
         />
       </div>
 
       {/* 2. Right Side: Background Image & Product Card */}
-      <div className="relative w-full lg:w-1/2 h-[600px] flex items-center justify-center px-6 lg:px-20 overflow-hidden">
+      <div className="relative w-full lg:w-1/2 h-150 flex items-center justify-center px-6 lg:px-20 overflow-hidden">
         {/* Background Image */}
         <Image
           src="/Img/banner2.webp"
           alt="Banner Background"
           fill
+          sizes="(min-width: 1024px) 50vw, 100vw"
           className="object-cover z-0"
         />
         <div className="absolute inset-0 bg-black/10 z-0" />
@@ -46,7 +48,7 @@ const BannerSec = () => {
           whileInView={{ opacity: 1, x: 0 }}
           whileHover={{ y: -5 }}
           viewport={{ once: true }}
-          className="relative z-10 group bg-white rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl border border-transparent hover:border-gray-100 transition-all w-full max-w-[340px]"
+          className="relative z-10 group bg-white rounded-2xl p-6 flex flex-col items-center text-center shadow-2xl border border-transparent hover:border-gray-100 transition-all w-full max-w-85"
         >
           {/* Image Container */}
           <div className="relative w-full aspect-square bg-[#f9f9f9] rounded-xl overflow-hidden mb-6 flex items-center justify-center">
@@ -59,6 +61,7 @@ const BannerSec = () => {
               src={product.image}
               alt={product.name}
               fill
+              sizes="(min-width: 1024px) 340px, 90vw"
               className="object-cover group-hover:scale-110 transition-transform duration-500"
             />
           </div>

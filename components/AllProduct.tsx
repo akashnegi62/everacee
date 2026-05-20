@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,7 +7,9 @@ import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { Eye, Heart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
-import { mockProducts as allProducts } from "@/lib/mockProducts";
+import { mockProducts } from "@/lib/mockProducts";
+import { productApi } from "@/lib/api";
+import { ApiProduct, mapApiProductToUiProduct, UiProduct } from "@/lib/productMapping";
 
 interface AllProductProps {
   showFilter?: boolean;
@@ -17,16 +19,72 @@ const AllProduct: React.FC<AllProductProps> = ({ showFilter = false }) => {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [products, setProducts] = useState<UiProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const categories = [
-    "All",
-    ...Array.from(new Set(allProducts.map((p) => p.category))),
-  ];
+  useEffect(() => {
+    let mounted = true;
+
+    const fallbackProducts = mockProducts.map((product) => ({
+      id: product.id,
+      slug: String(product.id),
+      name: product.name,
+      description: product.description,
+      shortDescription: product.description,
+      price: product.price,
+      oldPrice: product.oldPrice,
+      stock: 0,
+      category: product.category,
+      status: product.status || "In Stock",
+      image: product.image,
+      rating: product.rating,
+      benefits: product.benefits,
+      specs: product.specs,
+    }));
+
+    const loadProducts = async () => {
+      try {
+        const response = await productApi.list({
+          page: 1,
+          limit: 60,
+          status: "active",
+          sort: "createdAt_desc",
+        });
+
+        const items = (response.data?.data?.items || []) as ApiProduct[];
+        const mappedProducts = items.map(mapApiProductToUiProduct);
+
+        if (!mounted) {
+          return;
+        }
+
+        setProducts(mappedProducts.length > 0 ? mappedProducts : fallbackProducts);
+      } catch {
+        if (mounted) {
+          setProducts(fallbackProducts);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const categories = useMemo(() => {
+    return ["All", ...Array.from(new Set(products.map((product) => product.category)))];
+  }, [products]);
 
   const filteredProducts =
     selectedCategory === "All"
-      ? allProducts
-      : allProducts.filter((p) => p.category === selectedCategory);
+      ? products
+      : products.filter((product) => product.category === selectedCategory);
 
   return (
     <section className="py-20 bg-[#fdfbf9]">
@@ -70,6 +128,12 @@ const AllProduct: React.FC<AllProductProps> = ({ showFilter = false }) => {
           layout
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
         >
+          {loading && (
+            <div className="col-span-full text-center text-sm font-bold text-gray-500 uppercase tracking-widest py-6">
+              Loading products...
+            </div>
+          )}
+
           <AnimatePresence>
             {filteredProducts.map((product) => (
               <motion.div
@@ -80,10 +144,10 @@ const AllProduct: React.FC<AllProductProps> = ({ showFilter = false }) => {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
                 whileHover={{ y: -8 }}
-                className="group bg-white rounded-[32px] p-5 flex flex-col items-center text-center shadow-sm border border-transparent hover:border-yellow-100 hover:shadow-xl transition-all duration-300 select-none"
+                className="group bg-white rounded-4xl p-5 flex flex-col items-center text-center shadow-sm border border-transparent hover:border-yellow-100 hover:shadow-xl transition-all duration-300 select-none"
               >
                 {/* Image Container with Floating Actions */}
-                <div className="relative w-full aspect-square bg-[#f8f8f8] rounded-[24px] overflow-hidden mb-6 flex items-center justify-center">
+                <div className="relative w-full aspect-square bg-[#f8f8f8] rounded-3xl overflow-hidden mb-6 flex items-center justify-center">
                   {product.status && (
                     <span className="absolute top-4 left-4 bg-[#facc15] text-[11px] font-black px-3 py-1 rounded-full uppercase z-10 shadow-sm">
                       {product.status}
@@ -135,6 +199,7 @@ const AllProduct: React.FC<AllProductProps> = ({ showFilter = false }) => {
                       src={product.image}
                       alt={product.name}
                       fill
+                      sizes="(min-width: 1280px) 22vw, (min-width: 640px) 45vw, 92vw"
                       className="object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                   </Link>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -14,23 +14,110 @@ import {
   Plus,
   Trash2,
   Tag,
+  Loader2,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
+import { categoryApi, productApi, uploadApi } from "@/lib/api";
+
+type CategoryNode = {
+  id: number;
+  name: string;
+  status?: string;
+  children?: CategoryNode[];
+};
+
+type CategoryOption = {
+  id: number;
+  label: string;
+};
+
+type ProductSpec = {
+  label: string;
+  value: string;
+};
+
+type ProductFormData = {
+  title: string;
+  shortDescription: string;
+  description: string;
+  sku: string;
+  price: string;
+  comparePrice: string;
+  stock: string;
+  categoryId: string;
+  productType: "simple" | "configurable" | "variant";
+  status: "active" | "inactive";
+  benefits: string[];
+  specs: ProductSpec[];
+};
+
+const STATUS_OPTIONS: Array<{ value: ProductFormData["status"]; label: string }> = [
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+];
+
+const flattenCategories = (nodes: CategoryNode[], trail = ""): CategoryOption[] => {
+  return nodes.flatMap((node) => {
+    const currentLabel = trail ? `${trail} / ${node.name}` : node.name;
+    const children = Array.isArray(node.children) ? node.children : [];
+
+    return [
+      { id: node.id, label: currentLabel },
+      ...flattenCategories(children, currentLabel),
+    ];
+  });
+};
+
+const toAbsoluteUrl = (assetUrl: string) => {
+  if (assetUrl.startsWith("http://") || assetUrl.startsWith("https://")) {
+    return assetUrl;
+  }
+
+  if (typeof window === "undefined") {
+    return assetUrl;
+  }
+
+  return `${window.location.origin}${assetUrl}`;
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (typeof error !== "object" || error === null) {
+    return fallback;
+  }
+
+  const maybeError = error as {
+    message?: string;
+    response?: {
+      data?: {
+        message?: string;
+      };
+    };
+  };
+
+  return maybeError.response?.data?.message || maybeError.message || fallback;
+};
 
 export default function AddProductPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState("/Img/walnuts.jpg");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isCategoryLoading, setIsCategoryLoading] = useState(true);
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
-  const [formData, setFormData] = useState({
-    name: "",
-    price: "",
-    oldPrice: "",
-    stock: "",
-    category: "Dry Fruits",
-    status: "In Stock",
+  const [formData, setFormData] = useState<ProductFormData>({
+    title: "",
+    shortDescription: "",
     description: "",
+    sku: "",
+    price: "",
+    comparePrice: "",
+    stock: "",
+    categoryId: "",
+    productType: "simple",
+    status: "active",
     benefits: ["Rich in Vitamin E & Antioxidants", "Supports Heart Health & Immunity"],
     specs: [
       { label: "Origin", value: "Kashmir Valley" },
@@ -39,17 +126,68 @@ export default function AddProductPage() {
     ],
   });
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCategories = async () => {
+      try {
+        const response = await categoryApi.getTree({ status: "active" });
+        const tree = (response.data?.data || []) as CategoryNode[];
+        const options = flattenCategories(tree);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setCategoryOptions(options);
+        setFormData((prev) => ({
+          ...prev,
+          categoryId: prev.categoryId || (options[0] ? String(options[0].id) : ""),
+        }));
+      } catch (error: unknown) {
+        if (isMounted) {
+          const message = getErrorMessage(error, "Failed to load categories");
+          toast.error(message);
+        }
+      } finally {
+        if (isMounted) {
+          setIsCategoryLoading(false);
+        }
+      }
+    };
+
+    loadCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value } as ProductFormData));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setImagePreview(url);
+    if (!file) {
+      return;
     }
+
+    if (imagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    setSelectedImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   // Dynamic Health Benefits handlers
@@ -86,19 +224,122 @@ export default function AddProductPage() {
     setFormData((prev) => ({ ...prev, specs: prev.specs.filter((_, i) => i !== index) }));
   };
 
+  const cleanBenefits = useMemo(() => {
+    return formData.benefits.map((entry) => entry.trim()).filter(Boolean);
+  }, [formData.benefits]);
+
+  const cleanSpecs = useMemo(() => {
+    return formData.specs
+      .map((spec) => ({
+        label: spec.label.trim(),
+        value: spec.value.trim(),
+      }))
+      .filter((spec) => spec.label && spec.value);
+  }, [formData.specs]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSaving(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const trimmedTitle = formData.title.trim();
+      const trimmedDescription = formData.description.trim();
+      const price = Number(formData.price);
+      const stock = Number(formData.stock);
+      const comparePrice = formData.comparePrice ? Number(formData.comparePrice) : null;
+
+      if (!trimmedTitle) {
+        throw new Error("Product name is required");
+      }
+
+      if (!trimmedDescription) {
+        throw new Error("Product description is required");
+      }
+
+      if (!Number.isFinite(price) || price < 0) {
+        throw new Error("Price must be a valid positive number");
+      }
+
+      if (!Number.isInteger(stock) || stock < 0) {
+        throw new Error("Stock must be a valid non-negative integer");
+      }
+
+      if (!selectedImageFile) {
+        throw new Error("Please choose a product image");
+      }
+
+      setIsUploading(true);
+      const uploadResponse = await uploadApi.uploadProductImage(selectedImageFile);
+      const localImageUrl = uploadResponse.data?.data?.url as string | undefined;
+      setIsUploading(false);
+
+      if (!localImageUrl) {
+        throw new Error("Image upload failed");
+      }
+
+      const imageUrl = toAbsoluteUrl(localImageUrl);
+      const categoryIds = formData.categoryId ? [Number(formData.categoryId)] : [];
+
+      const trimmedSku = formData.sku.trim();
+      const autoSku = trimmedSku
+        ? trimmedSku
+        : `${trimmedTitle.toUpperCase().replace(/[^A-Z0-9]/g, "-").replace(/-+/g, "-").slice(0, 10)}-${Date.now().toString(36).toUpperCase()}`;
+
+      const payload: Record<string, unknown> = {
+        title: trimmedTitle,
+        description: trimmedDescription,
+        shortDescription: formData.shortDescription.trim() || null,
+        productType: formData.productType,
+        status: formData.status,
+        thumbnail: imageUrl,
+        categoryIds,
+        variants: [
+          {
+            sku: autoSku,
+            price,
+            comparePrice,
+            status: formData.status,
+            image: imageUrl,
+            stock,
+            inventory: {
+              quantity: stock,
+            },
+          },
+        ],
+        media: [
+          {
+            url: imageUrl,
+            mediaType: "image",
+            altText: trimmedTitle,
+            position: 0,
+          },
+        ],
+      };
+
+      const meta: Record<string, unknown> = {};
+
+      if (cleanBenefits.length > 0) {
+        meta.healthBenefits = cleanBenefits;
+      }
+
+      if (cleanSpecs.length > 0) {
+        meta.specifications = cleanSpecs;
+      }
+
+      if (Object.keys(meta).length > 0) {
+        payload.meta = meta;
+      }
+
+      await productApi.create(payload);
+
       toast.success("Product added successfully!");
       router.push("/admin/products");
-    } catch {
-      toast.error("Failed to add product");
+    } catch (error: unknown) {
+      const message = getErrorMessage(error, "Failed to add product");
+      toast.error(message);
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
+      setIsUploading(false);
     }
   };
 
@@ -134,10 +375,10 @@ export default function AddProductPage() {
                 <label className="block text-xs font-black uppercase text-gray-700 mb-2">Product Name</label>
                 <input
                   type="text"
-                  name="name"
+                  name="title"
                   required
                   placeholder="e.g. Premium Kashmiri Walnuts"
-                  value={formData.name}
+                  value={formData.title}
                   onChange={handleChange}
                   className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
                 />
@@ -162,15 +403,15 @@ export default function AddProductPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black uppercase text-gray-700 mb-2">Old Price (Optional)</label>
+                  <label className="block text-xs font-black uppercase text-gray-700 mb-2">Compare Price (Optional)</label>
                   <div className="relative">
                     <Tag size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="number"
                       step="0.01"
-                      name="oldPrice"
+                      name="comparePrice"
                       placeholder="0.00"
-                      value={formData.oldPrice}
+                      value={formData.comparePrice}
                       onChange={handleChange}
                       className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-11 pr-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all"
                     />
@@ -183,6 +424,7 @@ export default function AddProductPage() {
                     <Layers size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="number"
+                      min={0}
                       name="stock"
                       required
                       placeholder="100"
@@ -198,16 +440,21 @@ export default function AddProductPage() {
                 <div>
                   <label className="block text-xs font-black uppercase text-gray-700 mb-2">Category</label>
                   <select
-                    name="category"
-                    value={formData.category}
+                    name="categoryId"
+                    value={formData.categoryId}
                     onChange={handleChange}
+                    disabled={isCategoryLoading || categoryOptions.length === 0}
                     className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all cursor-pointer"
                   >
-                    <option value="Dry Fruits">Dry Fruits</option>
-                    <option value="Honey">Honey</option>
-                    <option value="Berries">Berries</option>
-                    <option value="Spices">Spices</option>
-                    <option value="Nuts">Nuts</option>
+                    {isCategoryLoading && <option value="">Loading categories...</option>}
+                    {!isCategoryLoading && categoryOptions.length === 0 && (
+                      <option value="">No categories available</option>
+                    )}
+                    {categoryOptions.map((option) => (
+                      <option key={option.id} value={String(option.id)}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -219,13 +466,25 @@ export default function AddProductPage() {
                     onChange={handleChange}
                     className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all cursor-pointer"
                   >
-                    <option value="In Stock">In Stock</option>
-                    <option value="Low Stock">Low Stock</option>
-                    <option value="Out of Stock">Out of Stock</option>
-                    <option value="New">New</option>
-                    <option value="-15%">-15% Sale</option>
+                    {STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase text-gray-700 mb-2">Short Description (Optional)</label>
+                <textarea
+                  name="shortDescription"
+                  rows={2}
+                  placeholder="Short summary shown in cards and quick listings..."
+                  value={formData.shortDescription}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border-none rounded-2xl py-4 px-5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-[#facc15] outline-none transition-all resize-none"
+                />
               </div>
 
               <div>
@@ -265,7 +524,6 @@ export default function AddProductPage() {
                   </span>
                   <input
                     type="text"
-                    required
                     placeholder="e.g. Rich in Omega-3 Fatty Acids"
                     value={benefit}
                     onChange={(e) => handleBenefitChange(idx, e.target.value)}
@@ -305,7 +563,6 @@ export default function AddProductPage() {
                 <div key={idx} className="flex items-center gap-3">
                   <input
                     type="text"
-                    required
                     placeholder="Label (e.g. Origin)"
                     value={spec.label}
                     onChange={(e) => handleSpecChange(idx, "label", e.target.value)}
@@ -313,7 +570,6 @@ export default function AddProductPage() {
                   />
                   <input
                     type="text"
-                    required
                     placeholder="Value (e.g. Pampore, Kashmir)"
                     value={spec.value}
                     onChange={(e) => handleSpecChange(idx, "value", e.target.value)}
@@ -344,22 +600,22 @@ export default function AddProductPage() {
             <div className="space-y-4">
               <div className="relative w-full aspect-square rounded-3xl overflow-hidden bg-gray-100 border-2 border-dashed border-gray-200 group flex items-center justify-center">
                 {imagePreview ? (
-                  <Image src={imagePreview} alt="Preview" fill className="object-cover" />
+                  <Image src={imagePreview} alt="Preview" fill unoptimized className="object-cover" />
                 ) : (
                   <div className="text-center p-4">
                     <Upload size={32} className="mx-auto text-gray-400 mb-2" />
-                    <span className="text-xs font-bold text-gray-500 uppercase">Upload Image</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase">Select Product Image</span>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                   <label className="bg-white text-black px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider shadow-lg cursor-pointer hover:bg-[#facc15] transition-colors">
-                    Change Image
+                    {imagePreview ? "Change Image" : "Upload Image"}
                     <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                   </label>
                 </div>
               </div>
               <p className="text-[11px] font-bold text-gray-400 text-center uppercase tracking-tight">
-                Recommended size: 800x800px (JPG, PNG, WEBP)
+                Stored locally in uploads/products. Recommended: 800x800px (JPG, PNG, WEBP)
               </p>
             </div>
           </div>
@@ -367,11 +623,11 @@ export default function AddProductPage() {
           <div className="bg-white p-8 rounded-4xl border border-gray-100 shadow-xl space-y-4">
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isSaving || isUploading}
               className="w-full bg-[#facc15] text-black py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl hover:bg-black hover:text-white transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
-              <Save size={18} />
-              {isLoading ? "Saving..." : "Save Product"}
+              {isUploading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+              {isUploading ? "Uploading Image..." : isSaving ? "Saving..." : "Save Product"}
             </button>
             <Link
               href="/admin/products"

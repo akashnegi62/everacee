@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,24 +18,111 @@ import {
   ArrowLeftRight,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { mockProducts, Product } from "@/lib/mockProducts";
+import { mockProducts } from "@/lib/mockProducts";
 import { toast } from "react-hot-toast";
+import { productApi } from "@/lib/api";
+import { ApiProduct, mapApiProductToUiProduct, UiProduct } from "@/lib/productMapping";
+
+const toFallbackProduct = (id: number) => {
+  const selected = mockProducts.find((product) => Number(product.id) === id) || mockProducts[0];
+
+  return {
+    id: selected.id,
+    slug: String(selected.id),
+    name: selected.name,
+    description: selected.description,
+    shortDescription: selected.description,
+    price: selected.price,
+    oldPrice: selected.oldPrice,
+    stock: 0,
+    category: selected.category,
+    status: selected.status || "In Stock",
+    image: selected.image,
+    rating: selected.rating,
+    benefits: selected.benefits,
+    specs: selected.specs,
+  } as UiProduct;
+};
 
 export default function ProductDetailPage() {
   const params = useParams();
   const idParam = params?.id;
   const productId = idParam ? Number(idParam) : 1;
-
-  const product: Product = mockProducts.find((p) => p.id === productId) || mockProducts[0];
   const { addToCart } = useCart();
 
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<"description" | "specs" | "shipping">("description");
+  const [product, setProduct] = useState<UiProduct | null>(null);
+  const [recommendedProducts, setRecommendedProducts] = useState<UiProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadProduct = async () => {
+      setLoading(true);
+
+      try {
+        const [productResponse, recommendationsResponse] = await Promise.all([
+          productApi.getById(productId),
+          productApi.list({
+            page: 1,
+            limit: 12,
+            status: "active",
+            sort: "createdAt_desc",
+          }),
+        ]);
+
+        const productData = productResponse.data?.data as ApiProduct;
+        const listItems = (recommendationsResponse.data?.data?.items || []) as ApiProduct[];
+
+        const mappedProduct = mapApiProductToUiProduct(productData);
+        const mappedRecommendations = listItems
+          .map(mapApiProductToUiProduct)
+          .filter((entry) => String(entry.id) !== String(mappedProduct.id))
+          .slice(0, 4);
+
+        if (!mounted) {
+          return;
+        }
+
+        setProduct(mappedProduct);
+        setRecommendedProducts(mappedRecommendations);
+      } catch {
+        if (!mounted) {
+          return;
+        }
+
+        const fallbackProduct = toFallbackProduct(productId);
+        const fallbackRecommendations = mockProducts
+          .filter((item) => String(item.id) !== String(fallbackProduct.id))
+          .slice(0, 4)
+          .map((item) => toFallbackProduct(Number(item.id)));
+
+        setProduct(fallbackProduct);
+        setRecommendedProducts(fallbackRecommendations);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProduct();
+
+    return () => {
+      mounted = false;
+    };
+  }, [productId]);
 
   const handleIncrease = () => setQuantity((prev) => prev + 1);
   const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const handleAddCustomQuantity = () => {
+    if (!product) {
+      return;
+    }
+
     for (let i = 0; i < quantity; i++) {
       addToCart({
         id: `prod-${product.id}`,
@@ -47,8 +134,13 @@ export default function ProductDetailPage() {
     toast.success(`Added ${quantity} of ${product.name} to cart!`);
   };
 
-  // Recommendations: exclude current product, pick up to 4
-  const recommendedProducts = mockProducts.filter((p) => p.id !== product.id).slice(0, 4);
+  if (loading || !product) {
+    return (
+      <div className="bg-[#fdfbf9] min-h-screen py-12 px-6 sm:px-12 flex items-center justify-center">
+        <div className="text-sm font-bold text-gray-500 uppercase tracking-widest">Loading product...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#fdfbf9] min-h-screen py-12 px-6 sm:px-12">
@@ -59,7 +151,7 @@ export default function ProductDetailPage() {
             Home
           </Link>
           <span>/</span>
-          <Link href="#" className="hover:text-[#facc15] transition-colors">
+          <Link href="/shop" className="hover:text-[#facc15] transition-colors">
             Shop
           </Link>
           <span>/</span>
@@ -282,10 +374,10 @@ export default function ProductDetailPage() {
               <motion.div
                 key={rec.id}
                 whileHover={{ y: -8 }}
-                className="group bg-white rounded-[32px] p-5 flex flex-col items-center text-center shadow-sm border border-transparent hover:border-yellow-100 hover:shadow-xl transition-all duration-300"
+                className="group bg-white rounded-4xl p-5 flex flex-col items-center text-center shadow-sm border border-transparent hover:border-yellow-100 hover:shadow-xl transition-all duration-300"
               >
                 {/* Image Container with Floating Actions */}
-                <div className="relative w-full aspect-square bg-[#f8f8f8] rounded-[24px] overflow-hidden mb-6 flex items-center justify-center">
+                <div className="relative w-full aspect-square bg-[#f8f8f8] rounded-3xl overflow-hidden mb-6 flex items-center justify-center">
                   {rec.status && (
                     <span className="absolute top-4 left-4 bg-[#facc15] text-[11px] font-black px-3 py-1 rounded-full uppercase z-10 shadow-sm">
                       {rec.status}

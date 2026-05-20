@@ -1,16 +1,55 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Users, Package, ShoppingBag, Warehouse, Tag, Star, Image as ImageIcon, ShieldAlert, Settings, LogOut, Menu, X } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+
+const isAdminRole = (role?: string | null) => {
+  if (!role) {
+    return false;
+  }
+
+  const normalizedRole = role.toLowerCase();
+  return normalizedRole === "admin" || normalizedRole === "super_admin";
+};
 
 export default function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const router = useRouter();
+  const { user, loading, isAuthenticated } = useAuth();
   const pathname = usePathname() || "";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const isAdminLoginRoute = pathname === "/admin/login";
+  const hasAdminAccess = isAuthenticated && isAdminRole(user?.role);
+
+  useEffect(() => {
+    if (isAdminLoginRoute || loading) {
+      return;
+    }
+
+    if (!hasAdminAccess) {
+      router.replace("/admin/login");
+    }
+  }, [hasAdminAccess, isAdminLoginRoute, loading, router]);
+
+  if (isAdminLoginRoute) {
+    return <>{children}</>;
+  }
+
+  if (loading || !hasAdminAccess) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center px-6">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-[#facc15]/40 border-t-[#facc15] rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm font-bold uppercase tracking-widest text-white/80">Verifying admin access...</p>
+        </div>
+      </div>
+    );
+  }
 
   const isProductsActive = pathname.startsWith("/admin/products");
   const isOrdersActive = pathname.startsWith("/admin/orders");
@@ -242,7 +281,7 @@ export default function AdminLayout({
           </div>
           <div className="flex items-center gap-4 shrink-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-900 rounded-full flex items-center justify-center text-[#facc15] font-black text-xs sm:text-sm border-2 border-gray-100 shadow-sm">
-              A
+              {(user?.firstName?.[0] || user?.email?.[0] || "A").toUpperCase()}
             </div>
           </div>
         </header>

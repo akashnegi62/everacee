@@ -52,6 +52,7 @@ const CustomerSec = () => {
                   src={src}
                   alt="Brand lifestyle"
                   fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover hover:scale-110 transition-transform duration-700"
                 />
               </div>

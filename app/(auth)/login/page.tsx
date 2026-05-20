@@ -30,8 +30,8 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center p-6 relative overflow-hidden">
       {/* Decorative Background elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#facc15] opacity-5 blur-[120px] -mr-64 -mt-64 rounded-full" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#facc15] opacity-5 blur-[120px] -ml-64 -mb-64 rounded-full" />
+      <div className="absolute top-0 right-0 w-125 h-125 bg-[#facc15] opacity-5 blur-[120px] -mr-64 -mt-64 rounded-full" />
+      <div className="absolute bottom-0 left-0 w-125 h-125 bg-[#facc15] opacity-5 blur-[120px] -ml-64 -mb-64 rounded-full" />
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -108,6 +108,11 @@ const LoginPage = () => {
         <p className="text-center text-gray-500 font-bold text-xs mt-10">
           DON&apos;T HAVE AN ACCOUNT? {' '}
           <Link href="/register" className="text-[#facc15] hover:text-white transition-colors uppercase tracking-widest ml-1">Register Now</Link>
+        </p>
+
+        <p className="text-center text-gray-500 font-bold text-[11px] mt-4 uppercase tracking-widest">
+          Admin? {' '}
+          <Link href="/admin/login" className="text-white hover:text-[#facc15] transition-colors">Use Admin Login</Link>
         </p>
       </motion.div>
     </div>

@@ -8,15 +8,75 @@ import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { mockProducts } from "@/lib/mockProducts";
-
-const productIds = [3, 9, 5, 6, 10, 11, 12, 13];
-const products = productIds.map((id) => mockProducts.find((p) => p.id === id)!).filter(Boolean);
+import { productApi } from "@/lib/api";
+import {
+  ApiProduct,
+  mapApiProductToUiProduct,
+  UiProduct,
+} from "@/lib/productMapping";
 
 const ProductSec = () => {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(4);
+  const [products, setProducts] = useState<UiProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fallbackProducts = mockProducts.map((product) => ({
+      id: product.id,
+      slug: String(product.id),
+      name: product.name,
+      description: product.description,
+      shortDescription: product.description,
+      price: product.price,
+      oldPrice: product.oldPrice,
+      stock: 0,
+      category: product.category,
+      status: product.status || "In Stock",
+      image: product.image,
+      rating: product.rating,
+      benefits: product.benefits,
+      specs: product.specs,
+    }));
+
+    const loadProducts = async () => {
+      try {
+        const response = await productApi.list({
+          page: 1,
+          limit: 60,
+          status: "active",
+          sort: "createdAt_desc",
+        });
+
+        const items = (response.data?.data?.items || []) as ApiProduct[];
+        const mappedProducts = items.map(mapApiProductToUiProduct);
+
+        if (!mounted) {
+          return;
+        }
+
+        setProducts(mappedProducts.length > 0 ? mappedProducts : fallbackProducts);
+      } catch {
+        if (mounted) {
+          setProducts(fallbackProducts);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -27,8 +87,6 @@ const ProductSec = () => {
         newItemsPerPage = 2;
       }
       setItemsPerPage(newItemsPerPage);
-      // Reset index to prevent out-of-bounds errors on resize
-      setCurrentIndex(0);
     };
 
     handleResize();
@@ -36,13 +94,22 @@ const ProductSec = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(products.length / itemsPerPage));
+  const safeCurrentIndex = currentIndex >= totalPages ? 0 : currentIndex;
 
   const nextSlide = () => {
+    if (!products.length) {
+      return;
+    }
+
     setCurrentIndex((prev) => (prev + 1) % totalPages);
   };
 
   const prevSlide = () => {
+    if (!products.length) {
+      return;
+    }
+
     setCurrentIndex((prev) => (prev - 1 + totalPages) % totalPages);
   };
 
@@ -93,11 +160,17 @@ const ProductSec = () => {
 
         {/* Product Carousel Container */}
         <div className="relative cursor-grab active:cursor-grabbing overflow-hidden py-2">
+          {loading && (
+            <div className="text-center text-sm font-bold text-gray-500 uppercase tracking-widest py-6">
+              Loading products...
+            </div>
+          )}
+
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             onDragEnd={handleDragEnd}
-            animate={{ x: `-${currentIndex * 100}%` }}
+            animate={{ x: `-${safeCurrentIndex * 100}%` }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="flex touch-pan-y"
           >
@@ -127,9 +200,9 @@ const ProductSec = () => {
                     >
                       {/* Image Container */}
                       <div className="relative w-full aspect-square bg-[#f9f9f9] rounded-3xl overflow-hidden mb-6 sm:mb-8 flex items-center justify-center">
-                        {product.discount || product.status ? (
+                        {product.status ? (
                           <span className="absolute top-4 left-4 bg-[#facc15] text-[10px] sm:text-[11px] font-black px-3 py-1.5 rounded-full uppercase z-10 shadow-lg">
-                            {product.discount || product.status}
+                            {product.status}
                           </span>
                         ) : null}
 
@@ -175,6 +248,7 @@ const ProductSec = () => {
                             src={product.image}
                             alt={product.name}
                             fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                             className="object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out pointer-events-none"
                           />
                         </Link>
@@ -240,7 +314,7 @@ const ProductSec = () => {
               key={i}
               onClick={() => setCurrentIndex(i)}
               className={`h-2 rounded-full transition-all duration-500 ${
-                currentIndex === i
+                safeCurrentIndex === i
                   ? "w-8 sm:w-12 bg-black"
                   : "w-2 bg-gray-200 hover:bg-gray-400"
               }`}
