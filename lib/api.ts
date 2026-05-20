@@ -90,7 +90,7 @@ export const uploadApi = {
     const formData = new FormData();
     formData.append("file", file);
 
-    return axios.post("/api/admin/uploads", formData, {
+    return api.post("/admin/uploads", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

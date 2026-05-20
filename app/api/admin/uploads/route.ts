@@ -1,5 +1,3 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 
 const ALLOWED_IMAGE_TYPES = new Set([
@@ -11,33 +9,14 @@ const ALLOWED_IMAGE_TYPES = new Set([
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-const sanitizeBaseName = (name: string) => {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9-_]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
-};
+const getApiBaseUrl = () => {
+  const value = process.env.API_URL?.trim();
 
-const getExtensionFromType = (mimeType: string) => {
-  if (mimeType === "image/jpeg") {
-    return "jpg";
+  if (!value) {
+    return null;
   }
 
-  if (mimeType === "image/png") {
-    return "png";
-  }
-
-  if (mimeType === "image/webp") {
-    return "webp";
-  }
-
-  if (mimeType === "image/gif") {
-    return "gif";
-  }
-
-  return "bin";
+  return value.endsWith("/") ? value.slice(0, -1) : value;
 };
 
 export const runtime = "nodejs";
@@ -45,6 +24,18 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
+    const apiBaseUrl = getApiBaseUrl();
+
+    if (!apiBaseUrl) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "API_URL is not configured",
+        },
+        { status: 500 },
+      );
+    }
+
     const formData = await request.formData();
     const fileEntry = formData.get("file");
 
@@ -78,28 +69,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const extension = getExtensionFromType(fileEntry.type);
-    const originalBaseName = path.parse(fileEntry.name).name || "product-image";
-    const safeBaseName = sanitizeBaseName(originalBaseName) || "product-image";
-    const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const fileName = `${safeBaseName}-${uniqueSuffix}.${extension}`;
+    const upstreamFormData = new FormData();
+    upstreamFormData.append("file", fileEntry);
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "products");
-    await mkdir(uploadDir, { recursive: true });
+    const requestHeaders = new Headers();
 
-    const fileBuffer = Buffer.from(await fileEntry.arrayBuffer());
-    await writeFile(path.join(uploadDir, fileName), fileBuffer);
+    const incomingAuthorization = request.headers.get("authorization");
+    if (incomingAuthorization) {
+      requestHeaders.set("authorization", incomingAuthorization);
+    }
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Image uploaded successfully",
-        data: {
-          url: `/uploads/products/${fileName}`,
-        },
+    const incomingCookie = request.headers.get("cookie");
+    if (incomingCookie) {
+      requestHeaders.set("cookie", incomingCookie);
+    }
+
+    const incomingAccept = request.headers.get("accept");
+    if (incomingAccept) {
+      requestHeaders.set("accept", incomingAccept);
+    }
+
+    const incomingUserAgent = request.headers.get("user-agent");
+    if (incomingUserAgent) {
+      requestHeaders.set("user-agent", incomingUserAgent);
+    }
+
+    const upstream = await fetch(`${apiBaseUrl}/api/v1/products/uploads`, {
+      method: "POST",
+      headers: requestHeaders,
+      body: upstreamFormData,
+      cache: "no-store",
+      redirect: "manual",
+    });
+
+    const contentType = upstream.headers.get("content-type") || "application/json";
+
+    if (contentType.includes("application/json")) {
+      const payload = await upstream.json();
+      return NextResponse.json(payload, { status: upstream.status });
+    }
+
+    const body = await upstream.arrayBuffer();
+    return new NextResponse(body, {
+      status: upstream.status,
+      statusText: upstream.statusText,
+      headers: {
+        "content-type": contentType,
       },
-      { status: 201 },
-    );
+    });
   } catch (error) {
     return NextResponse.json(
       {
