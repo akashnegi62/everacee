@@ -69,9 +69,36 @@ const flattenCategories = (nodes: CategoryNode[], trail = ""): CategoryOption[] 
   });
 };
 
+const trimTrailingSlash = (value: string) => value.replace(/\/+$/, "");
+
+const resolveUploadsBaseUrl = () => {
+  const explicitBase = process.env.NEXT_PUBLIC_UPLOADS_BASE_URL?.trim();
+  if (explicitBase) {
+    return trimTrailingSlash(explicitBase);
+  }
+
+  const apiBase = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (!apiBase) {
+    return "";
+  }
+
+  try {
+    const parsed = new URL(apiBase);
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch {
+    return "";
+  }
+};
+
+const UPLOADS_BASE_URL = resolveUploadsBaseUrl();
+
 const toAbsoluteUrl = (assetUrl: string) => {
   if (assetUrl.startsWith("http://") || assetUrl.startsWith("https://")) {
     return assetUrl;
+  }
+
+  if (assetUrl.startsWith("/uploads/") && UPLOADS_BASE_URL) {
+    return `${UPLOADS_BASE_URL}${assetUrl}`;
   }
 
   if (typeof window === "undefined") {

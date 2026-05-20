@@ -67,6 +67,29 @@ export type UiProduct = {
 const FALLBACK_IMAGE = "/Img/walnuts.jpg";
 const BROKEN_PLACEHOLDER_HOSTS = new Set(["cdn.example.com"]);
 
+const trimTrailingSlash = (value: string) => value.replace(/\/+$/, "");
+
+const resolveUploadsBaseUrl = () => {
+  const explicitBase = process.env.NEXT_PUBLIC_UPLOADS_BASE_URL?.trim();
+  if (explicitBase) {
+    return trimTrailingSlash(explicitBase);
+  }
+
+  const apiBase = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (!apiBase) {
+    return "";
+  }
+
+  try {
+    const parsed = new URL(apiBase);
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch {
+    return "";
+  }
+};
+
+const UPLOADS_BASE_URL = resolveUploadsBaseUrl();
+
 const normalizeImageSrc = (rawSrc: string) => {
   const src = rawSrc.trim();
 
@@ -75,6 +98,10 @@ const normalizeImageSrc = (rawSrc: string) => {
   }
 
   if (src.startsWith("/")) {
+    if (src.startsWith("/uploads/") && UPLOADS_BASE_URL) {
+      return `${UPLOADS_BASE_URL}${src}`;
+    }
+
     return src;
   }
 
@@ -90,17 +117,24 @@ const normalizeImageSrc = (rawSrc: string) => {
     }
 
     if (
-      typeof window !== "undefined" &&
       (parsedUrl.hostname === "localhost" || parsedUrl.hostname === "127.0.0.1") &&
       parsedUrl.pathname.startsWith("/uploads/")
     ) {
-      // Prefer local-path rendering for uploaded assets to avoid host mismatch issues.
+      if (UPLOADS_BASE_URL) {
+        return `${UPLOADS_BASE_URL}${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
+      }
+
+      // Fallback to local path when no public uploads base is configured.
       return `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
     }
 
     return src;
   } catch {
     if (src.startsWith("uploads/")) {
+      if (UPLOADS_BASE_URL) {
+        return `${UPLOADS_BASE_URL}/${src}`;
+      }
+
       return `/${src}`;
     }
 
